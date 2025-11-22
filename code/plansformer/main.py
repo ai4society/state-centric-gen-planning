@@ -1,7 +1,7 @@
 import os
-# from transformers import RobertaTokenizer, T5ForConditionalGeneration
-# import torch
-# from torch import cuda
+from transformers import RobertaTokenizer, T5ForConditionalGeneration
+import torch
+from torch import cuda
 
 import re
 
@@ -159,7 +159,7 @@ def get_prompt(domain_file, problem_file):
 
     flag = 1
     # domain_name += '_rao'
-    print("Domain: " + domain_name)
+    # print("Domain: " + domain_name)
 
     # continue
 
@@ -179,6 +179,8 @@ def get_prompt(domain_file, problem_file):
     with open(problem_file, "r") as f:
         problem_data = f.read()
 
+    problem_data = problem_data.replace("(:INIT", "(:init").replace("(:GOAL", "(:goal")
+
     init_ind = problem_data.find("(:init")
     goal_ind = problem_data.find("(:goal")
 
@@ -191,30 +193,28 @@ def get_prompt(domain_file, problem_file):
 
 def main():
     model_path = "model_files"
-    # device = "cuda" if cuda.is_available() else "cpu"
-    # tokenizer = RobertaTokenizer.from_pretrained(model_path, local_files_only=True)
-    # model = T5ForConditionalGeneration.from_pretrained(
-    #     model_path, local_files_only=True
-    # )
-    # model = model.to(device)
+    device = "cuda" if cuda.is_available() else "cpu"
+    tokenizer = RobertaTokenizer.from_pretrained(model_path, local_files_only=True)
+    model = T5ForConditionalGeneration.from_pretrained(
+        model_path, local_files_only=True
+    )
+    model = model.to(device)
     domain = None
     for dirpath, dnames, fnames in os.walk(abs_data_path):
         if "domain.pddl" in fnames:
-            domain = os.join(dirpath, "domain.pddl")
+            domain = os.path.join(dirpath, "domain.pddl")
 
         p_files = []
 
         for fname in fnames:
             if re.fullmatch(
-                r"^.+/test-interpolation/.+\.pddl$", os.join(dirpath, fname)
+                r"^.+/test-interpolation/.+\.pddl$", os.path.join(dirpath, fname)
             ) or re.fullmatch(
-                r"^.+/test-extrapolation/.+\.pddl$", os.join(dirpath, fname)
+                r"^.+/test-extrapolation/.+\.pddl$", os.path.join(dirpath, fname)
             ):
-                print(fname)
-                domain = os.path.split(os.join(dirpath, fname))[-3]
                 p_files.append(
                     (
-                        os.join(
+                        os.path.join(
                             dirpath,
                             fname,
                         )
@@ -227,25 +227,26 @@ def main():
                 problem_file=p_file,
             )
 
-            # input_ids = tokenizer.encode(prompt, return_tensors="pt").to(
-            #     device, dtype=torch.long
-            # )
+            input_ids = tokenizer.encode(prompt, return_tensors="pt").to(
+                device, dtype=torch.long
+            )
 
-            # generated_ids = model.generate(
-            #     input_ids,
-            #     num_beams=2,
-            #     max_length=input_ids.shape[-1] + 2,
-            #     repetition_penalty=2.5,
-            #     length_penalty=1.0,
-            #     early_stopping=False,
-            # )
-            # predicted_plan = tokenizer.decode(
-            #     generated_ids[0], skip_special_tokens=True
-            # )
+            generated_ids = model.generate(
+                input_ids,
+                num_beams=2,
+                max_length=input_ids.shape[-1] + 2,
+                repetition_penalty=2.5,
+                length_penalty=1.0,
+                early_stopping=False,
+            )
+            predicted_plan = tokenizer.decode(
+                generated_ids[0], skip_special_tokens=True
+            )
 
             # Destination
+            dest = os.path.join(abs_save_path, p_file.removeprefix(abs_data_path + "/"))
 
-            dest = os.join(abs_save_path, p_file.removeprefix(abs_data_path))
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
 
             with open(dest, "w", encoding="utf-8") as out_f:
                 # out_f.write(predicted_plan.strip() + "\n")

@@ -3,6 +3,7 @@
 # Smaller data dir
 data/pddl-test
 own/
+slurm-out/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

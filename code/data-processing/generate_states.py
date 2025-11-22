@@ -10,11 +10,15 @@ from tqdm import tqdm
 
 from .utils.pddl_utils import get_initial_state, parse_val_output_to_trajectory
 
-# CONFIGURATION
 HOME = os.path.expanduser("~")
-ROOT_DIR = f"{HOME}/usc/ai4s/libraries/planning/"
-VAL_PATH = os.environ.get("VAL_PATH", f"{ROOT_DIR}VAL/validate")
 
+# CONFIGURATION (for local)
+# ROOT_DIR = f"{HOME}/usc/ai4s/libraries/planning/"
+# VAL_PATH = os.environ.get("VAL_PATH", f"{ROOT_DIR}VAL/validate")
+
+# CONFIGURATION (for Anvil)
+ROOT_DIR = f"{HOME}/planning/"
+VAL_PATH = os.environ.get("VAL_PATH", f"{ROOT_DIR}VAL/bin/Validate")
 
 def generate_state_trajectory(args):
     plan_file, domain_file, problem_file, output_state_file = args

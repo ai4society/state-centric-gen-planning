@@ -9,9 +9,14 @@ from pprint import pprint
 
 from tqdm import tqdm
 
-# Configuration
 HOME = os.path.expanduser("~")
-ROOT_DIR = f"{HOME}/usc/ai4s/libraries/planning/"
+
+# CONFIGURATION (for local)
+# ROOT_DIR = f"{HOME}/usc/ai4s/libraries/planning/"
+
+# CONFIGURATION (for Anvil)
+ROOT_DIR = f"{HOME}/planning/"
+
 FD_PATH = os.environ.get("FD_PATH", f"{ROOT_DIR}downward/fast-downward.py")
 TIMEOUT_BASELINE = "60s"
 TIMEOUT_FALLBACK = "300s"

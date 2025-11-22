@@ -1,4 +1,4 @@
-; Automatically converted to only require STRIPS and negative preconditions
+; automatically converted to only require strips and negative preconditions
 
 (define (problem strips-gripper-x-14)
   (:domain gripper-strips)

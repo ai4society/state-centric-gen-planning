@@ -1,17 +1,591 @@
 problem,status,reason
-data/pddl/blocks/test-interpolation/probBLOCKS-5-2.pddl,baseline,Solved by baseline
-data/pddl/blocks/test-extrapolation/probBLOCKS-17-0.pddl,fallback,Solved by fallback (Baseline failed)
-data/pddl/blocks/train/probBLOCKS-7-2.pddl,baseline,Solved by baseline
-data/pddl/blocks/validation/probBLOCKS-8-2.pddl,baseline,Solved by baseline
+data/pddl/gripper/test-interpolation/balls05.pddl,baseline,Solved by baseline
 data/pddl/gripper/test-interpolation/balls07.pddl,baseline,Solved by baseline
-data/pddl/gripper/test-extrapolation/prob20.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-interpolation/balls03.pddl,baseline,Solved by baseline
+data/pddl/gripper/train/balls04.pddl,baseline,Solved by baseline
+data/pddl/gripper/train/balls02.pddl,baseline,Solved by baseline
+data/pddl/gripper/train/balls06.pddl,baseline,Solved by baseline
 data/pddl/gripper/train/balls08.pddl,baseline,Solved by baseline
+data/pddl/gripper/test-extrapolation/prob11.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob12.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob17.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob06.pddl,baseline,Solved by baseline
+data/pddl/gripper/test-extrapolation/prob07.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob13.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob08.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob09.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob05.pddl,baseline,Solved by baseline
+data/pddl/gripper/test-extrapolation/prob16.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob10.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob14.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob18.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob19.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob15.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/test-extrapolation/prob20.pddl,fallback,Solved by fallback (Baseline failed)
 data/pddl/gripper/validation/balls10.pddl,baseline,Solved by baseline
-data/pddl/visitall-from-everywhere/test-interpolation/w09h01-03.pddl,baseline,Solved by baseline
-data/pddl/visitall-from-everywhere/test-extrapolation/w11h11-03.pddl,fallback,Solved by fallback (Baseline failed)
-data/pddl/visitall-from-everywhere/train/w11h01-10.pddl,baseline,Solved by baseline
-data/pddl/visitall-from-everywhere/validation/w10h02-03.pddl,baseline,Solved by baseline
+data/pddl/gripper/validation/balls09.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-interpolation/p04g04-2.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-interpolation/p04g02-1.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-interpolation/p04g04-1.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-interpolation/probLOGISTICS-4-1.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-interpolation/p04g02-3.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-interpolation/p04g04-3.pddl,baseline,Solved by baseline
 data/pddl/logistics/test-interpolation/probLOGISTICS-4-2.pddl,baseline,Solved by baseline
-data/pddl/logistics/test-extrapolation/probLOGISTICS-15-1.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/test-interpolation/p04g02-2.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-interpolation/probLOGISTICS-4-0.pddl,baseline,Solved by baseline
+data/pddl/logistics/train/p04g01-1.pddl,baseline,Solved by baseline
 data/pddl/logistics/train/probLOGISTICS-5-2.pddl,baseline,Solved by baseline
+data/pddl/logistics/train/probLOGISTICS-3-0.pddl,baseline,Solved by baseline
+data/pddl/logistics/train/probLOGISTICS-5-0.pddl,baseline,Solved by baseline
+data/pddl/logistics/train/p04g01-2.pddl,baseline,Solved by baseline
+data/pddl/logistics/train/probLOGISTICS-3-2.pddl,baseline,Solved by baseline
+data/pddl/logistics/train/probLOGISTICS-5-1.pddl,baseline,Solved by baseline
+data/pddl/logistics/train/p04g03-2.pddl,baseline,Solved by baseline
+data/pddl/logistics/train/p04g01-3.pddl,baseline,Solved by baseline
+data/pddl/logistics/train/p04g03-1.pddl,baseline,Solved by baseline
+data/pddl/logistics/train/probLOGISTICS-3-1.pddl,baseline,Solved by baseline
+data/pddl/logistics/train/p04g03-3.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-extrapolation/probLOGISTICS-15-0.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/test-extrapolation/probLOGISTICS-10-1.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-extrapolation/probLOGISTICS-7-1.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-extrapolation/probLOGISTICS-13-0.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/test-extrapolation/probLOGISTICS-12-0.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-extrapolation/probLOGISTICS-13-1.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/test-extrapolation/probLOGISTICS-14-0.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/test-extrapolation/probLOGISTICS-15-1.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/test-extrapolation/probLOGISTICS-9-1.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-extrapolation/probLOGISTICS-12-1.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/test-extrapolation/probLOGISTICS-14-1.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/test-extrapolation/probLOGISTICS-7-0.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-extrapolation/probLOGISTICS-11-1.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/test-extrapolation/probLOGISTICS-8-1.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-extrapolation/probLOGISTICS-9-0.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-extrapolation/probLOGISTICS-11-0.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/test-extrapolation/probLOGISTICS-8-0.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-extrapolation/probLOGISTICS-10-0.pddl,fallback,Solved by fallback (Baseline failed)
 data/pddl/logistics/validation/probLOGISTICS-6-9.pddl,baseline,Solved by baseline
+data/pddl/logistics/validation/probLOGISTICS-6-1.pddl,baseline,Solved by baseline
+data/pddl/logistics/validation/probLOGISTICS-6-2.pddl,baseline,Solved by baseline
+data/pddl/logistics/validation/probLOGISTICS-6-0.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w05h01-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w01h09-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w02h04-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w02h01-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w09h01-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w01h08-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w03h05-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w01h08-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w03h05-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w02h01-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w01h05-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w02h04-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w01h05-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w05h03-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w05h03-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w01h05-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w08h01-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w01h02-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w01h09-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w05h01-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w08h01-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w01h09-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w09h01-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w03h03-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w03h03-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w08h01-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w01h08-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w05h01-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w09h01-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w04h02-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w03h05-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w04h02-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w02h04-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w04h02-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w03h03-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w05h03-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w01h02-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w10h01-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h06-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h04-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h06-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h10-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w11h01-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w11h01-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h02-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h03-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h10-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h08-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h02-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h06-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h01-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h03-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h05-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h02-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w10h01-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h02-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h05-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h05-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h07-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h03-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h07-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h04-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h02-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h04-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h07-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h10-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h05-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h07-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h11-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h07-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h03-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h06-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h06-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h01-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h06-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h04-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h03-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h07-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h01-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w05h02-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h03-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h11-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h01-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h01-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h04-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w11h01-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w05h02-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h03-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h04-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h01-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w10h01-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h06-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w08h02-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w10h01-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w05h02-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h07-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h07-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h05-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h02-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w08h02-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w05h02-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h03-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h11-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h04-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h10-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h02-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h07-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h04-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h01-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w08h02-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h11-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h04-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h03-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h04-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h03-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h02-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w05h02-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w08h02-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w05h02-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w11h01-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w11h01-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h02-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h02-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h11-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h01-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h10-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h04-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w08h02-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w08h02-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h07-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h03-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h02-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h03-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h02-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h08-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h04-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w11h01-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h10-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h11-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h07-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h08-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w10h01-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h01-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h04-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h06-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h04-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w08h02-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w08h02-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h08-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w05h02-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h02-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h06-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w05h02-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h04-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h02-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h02-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h01-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h02-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h07-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h01-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h01-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h05-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h07-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h03-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h02-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h05-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w05h02-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h03-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w10h01-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h06-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h10-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h11-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h08-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h02-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h04-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h04-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w11h01-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h10-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h07-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h01-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w10h01-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h02-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h03-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w11h01-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w11h01-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w11h01-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h06-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h01-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h04-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h01-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h04-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h08-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h05-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w08h02-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h06-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h03-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h01-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h10-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h01-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h02-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h02-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h06-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h01-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h08-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h04-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h03-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h05-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h03-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h01-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h02-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w03h04-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h03-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h11-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h10-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h06-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h02-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h07-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h05-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h04-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h07-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h02-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h01-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h04-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h01-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h06-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h02-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h02-07.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w10h01-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w10h01-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h11-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h08-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w01h11-09.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w05h02-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h02-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h06-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w04h04-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h07-04.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w06h02-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h02-08.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w07h02-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w10h01-05.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h08-06.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w02h08-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/train/w08h02-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h07-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h05-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h09-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h09-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h05-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h11-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h07-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h06-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h08-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h09-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h06-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h06-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h09-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h09-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h09-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h11-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h03-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h07-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h09-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h09-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h09-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h08-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h07-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h03-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h10-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h03-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h05-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h07-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h02-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h05-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h08-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h08-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h11-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h05-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h10-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h08-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h05-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h11-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h08-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h04-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h05-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h07-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h04-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h08-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h05-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h03-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h09-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h10-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h07-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h08-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h03-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h09-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h10-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h08-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h11-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h04-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h05-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h07-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h10-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h04-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h11-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h10-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h10-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w02h11-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h11-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h11-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h08-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h11-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h07-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h11-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h07-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h04-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h06-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h06-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w02h11-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h05-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h04-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h04-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h10-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h11-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h05-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h10-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h07-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h07-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h03-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h08-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h09-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h10-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h10-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h08-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h09-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h11-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h09-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h08-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h06-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h10-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h09-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h10-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h05-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h06-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h04-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h11-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h07-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h03-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h11-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h09-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h06-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h11-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h04-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h10-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h08-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h09-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h08-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h09-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h05-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h11-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h08-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h08-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h09-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h06-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h04-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h06-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h08-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h07-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h10-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h08-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h04-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h11-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h10-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h08-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h06-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h02-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h05-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h09-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h11-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h07-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h11-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h10-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h10-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h11-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h08-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h05-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h10-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h07-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h06-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h08-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h06-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h06-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h10-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h05-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h07-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h05-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h04-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h07-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h06-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h07-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h05-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h10-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h11-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h10-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h03-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h03-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h07-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h10-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h09-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h05-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w02h11-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h03-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h09-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h08-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h04-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h08-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h08-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h07-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h09-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h06-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h10-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h07-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h11-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h08-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h04-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h07-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h09-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h07-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h05-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h06-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h11-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h09-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h04-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h09-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h03-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w05h11-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h04-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h03-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w06h04-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h11-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h11-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h03-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h09-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h06-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w03h07-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h10-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h02-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h08-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w04h06-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h03-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h06-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h06-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h06-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h10-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h10-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h07-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h11-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w07h07-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h03-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h04-01.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w08h05-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w09h06-02.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/test-extrapolation/w10h06-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/validation/w05h04-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w06h03-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w06h03-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w03h06-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w02h09-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w02h10-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w02h10-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w10h02-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w03h06-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w05h04-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w05h04-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w04h05-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w04h05-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w06h03-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w02h10-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w09h02-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w09h02-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w02h09-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w04h05-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w02h09-01.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w03h06-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w10h02-02.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w10h02-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w09h02-02.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-interpolation/probBLOCKS-5-0.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-interpolation/probBLOCKS-5-1.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-interpolation/probBLOCKS-5-2.pddl,baseline,Solved by baseline
+data/pddl/blocks/train/probBLOCKS-6-1.pddl,baseline,Solved by baseline
+data/pddl/blocks/train/probBLOCKS-4-2.pddl,baseline,Solved by baseline
+data/pddl/blocks/train/probBLOCKS-7-2.pddl,baseline,Solved by baseline
+data/pddl/blocks/train/probBLOCKS-4-0.pddl,baseline,Solved by baseline
+data/pddl/blocks/train/probBLOCKS-6-2.pddl,baseline,Solved by baseline
+data/pddl/blocks/train/probBLOCKS-7-1.pddl,baseline,Solved by baseline
+data/pddl/blocks/train/probBLOCKS-4-1.pddl,baseline,Solved by baseline
+data/pddl/blocks/train/probBLOCKS-7-0.pddl,baseline,Solved by baseline
+data/pddl/blocks/train/probBLOCKS-6-0.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-11-0.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-12-0.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-9-1.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-16-1.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/blocks/test-extrapolation/probBLOCKS-10-1.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-10-0.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-14-0.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-14-1.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/blocks/test-extrapolation/probBLOCKS-17-0.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/blocks/test-extrapolation/probBLOCKS-9-0.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-15-0.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/blocks/test-extrapolation/probBLOCKS-12-1.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-9-2.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-13-1.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/blocks/test-extrapolation/probBLOCKS-13-0.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/blocks/test-extrapolation/probBLOCKS-11-2.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-10-2.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-11-1.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-15-1.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/blocks/test-extrapolation/probBLOCKS-16-2.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/blocks/validation/probBLOCKS-8-2.pddl,baseline,Solved by baseline
+data/pddl/blocks/validation/probBLOCKS-8-1.pddl,baseline,Solved by baseline
+data/pddl/blocks/validation/probBLOCKS-8-0.pddl,baseline,Solved by baseline

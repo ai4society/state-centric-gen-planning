@@ -1,4 +1,4 @@
-(define (domain gripper)
+(define (domain gripper-strips)
   (:requirements :strips :negative-preconditions)
   (:predicates
     (room ?r)

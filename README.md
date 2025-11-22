@@ -1,1 +1,1 @@
-# state-centric-plan
+# State-Centric Plan Generation

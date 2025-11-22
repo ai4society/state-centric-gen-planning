@@ -1,0 +1,17 @@
+problem,status,reason
+data/pddl/blocks/test-interpolation/probBLOCKS-5-2.pddl,baseline,Solved by baseline
+data/pddl/blocks/test-extrapolation/probBLOCKS-17-0.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/blocks/train/probBLOCKS-7-2.pddl,baseline,Solved by baseline
+data/pddl/blocks/validation/probBLOCKS-8-2.pddl,baseline,Solved by baseline
+data/pddl/gripper/test-interpolation/balls07.pddl,baseline,Solved by baseline
+data/pddl/gripper/test-extrapolation/prob20.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/gripper/train/balls08.pddl,baseline,Solved by baseline
+data/pddl/gripper/validation/balls10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-interpolation/w09h01-03.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/test-extrapolation/w11h11-03.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/visitall-from-everywhere/train/w11h01-10.pddl,baseline,Solved by baseline
+data/pddl/visitall-from-everywhere/validation/w10h02-03.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-interpolation/probLOGISTICS-4-2.pddl,baseline,Solved by baseline
+data/pddl/logistics/test-extrapolation/probLOGISTICS-15-1.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/train/probLOGISTICS-5-2.pddl,baseline,Solved by baseline
+data/pddl/logistics/validation/probLOGISTICS-6-9.pddl,baseline,Solved by baseline

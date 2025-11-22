@@ -1,5 +1,7 @@
 # Project-specific files
 **/.DS_Store
+# Smaller data dir
+data/pddl-test
 own/
 
 # Byte-compiled / optimized / DLL files

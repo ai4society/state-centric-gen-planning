@@ -17,5 +17,5 @@ echo "Hello"
 module load conda
 module load modtree/gpu
 conda activate john_test
-cd /anvil/projects/x-nairr250014/plansformer/codet5-base
+cd /anvil/projects/x-nairr250014/state-centric-gen-planning/code/plansformer
 python main.py

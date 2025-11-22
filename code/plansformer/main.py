@@ -192,7 +192,7 @@ def get_prompt(domain_file, problem_file):
 
 
 def main():
-    model_path = "model_files"
+    model_path = "/anvil/projects/x-nairr250014/plansformer/codet5-base/model_files"
     device = "cuda" if cuda.is_available() else "cpu"
     tokenizer = RobertaTokenizer.from_pretrained(model_path, local_files_only=True)
     model = T5ForConditionalGeneration.from_pretrained(
@@ -249,8 +249,8 @@ def main():
             os.makedirs(os.path.dirname(dest), exist_ok=True)
 
             with open(dest, "w", encoding="utf-8") as out_f:
-                # out_f.write(predicted_plan.strip() + "\n")
-                out_f.write("Hello_world" + "\n")
+                out_f.write(predicted_plan.strip() + "\n")
+                # out_f.write("Hello_world" + "\n")
 
 
 if __name__ == "__main__":

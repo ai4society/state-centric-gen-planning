@@ -10,8 +10,8 @@
 # %u User name.
 #SBATCH --mail-user=jaaydin@email.sc.edu
 #SBATCH --mail-type=ALL
-#SBATCH --partition=gpu-debug
-#SBATCH --time=00:15:00
+#SBATCH --partition=gpu
+#SBATCH --time=01:00:00
 #SBATCH --gres=gpu:1
 echo "Hello"
 module load conda

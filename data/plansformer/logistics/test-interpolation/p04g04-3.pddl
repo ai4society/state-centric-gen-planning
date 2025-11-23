@@ -1,0 +1,1 @@
+board-truck driver1 l1, load-truck package2 truck1 s1, load-truck package1 truck1 s1, load-truck package3 truck1 s0, drive-truck truck1 s1 l0, unload-truck package3 truck1 s0, drive-truck truck1 s0 l1, drive-truck truck1 s1 l0, unload-truck package1 truck1 s0, drive-truck truck1 s0 l1, drive-truck truck1 s1 l0, unload-truck package2 truck1 s0

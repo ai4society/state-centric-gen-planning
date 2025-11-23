@@ -1,0 +1,1 @@
+move d1 d0 d1, move d2 d2 d3, move d1 d1 d2, move d4 peg0 d5, move d1 d2 d4, move d2 d3 peg0, move d1 d4 d2, move d3 peg0 d4, move d1 d2 peg1, move d2 peg1 d3, move robot1 peg1 s0, drop robot1 ball1 s0

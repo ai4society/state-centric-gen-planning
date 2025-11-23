@@ -1,0 +1,1 @@
+walk driver1 s1 s1, board-truck driver1 truck1 s1, load-truck package12 truck1 s1, drive-truck truck1 s1 s12 driver1, unload-truck package12 truck1 s1, load-truck package13 truck1 s1, drive-truck truck1 s1 s2 driver1, load-truck package2 truck1 s2, drive-truck truck1 s2 s1 driver1, unload-truck package13 truck1 s1, drive-truck truck1 s1 s1, unload-truck package11 truck1 s1

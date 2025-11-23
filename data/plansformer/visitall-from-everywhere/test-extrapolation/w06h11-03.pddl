@@ -1,0 +1,1 @@
+move dup d6

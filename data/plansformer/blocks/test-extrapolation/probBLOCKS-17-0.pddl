@@ -1,0 +1,1 @@
+unstack b1 bput-down b1, unstack b3 b8, put-down b3, unstack b8 b7, put-down f8, unstack c7 b1, put-down c7, pick-up b1, stack b1 b3, unstack b7 b3, stack c7 b1, unstack b3 b1, stack b3 b3, pick-up b1, stack b1 b3

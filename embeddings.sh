@@ -23,7 +23,7 @@ mkdir -p slurm-out
 mkdir -p data/encodings/graphs
 
 # 2. Run Graph Embedding
-echo "Starting Graph Embedding Generation..."
+echo "Starting Graph Embedding Generation (Trajectories + Goals)..."
 uv run python -m code.encoding-generation.generate_graph_embeddings --iterations 2
 
 echo "Job finished at $(date)"

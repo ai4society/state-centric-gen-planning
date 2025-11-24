@@ -4,9 +4,14 @@ import os
 import re
 
 import numpy as np
+
+# PDDL Parsing
+import pddlpy
 from tqdm import tqdm
 from wlplan.data import DomainDataset, ProblemDataset
 from wlplan.feature_generator import init_feature_generator
+
+# WLPlan Imports
 from wlplan.planning import Atom, State, parse_domain, parse_problem
 
 # Configuration
@@ -55,6 +60,40 @@ def parse_trajectory_to_states(traj_filepath, wlplan_domain):
             states.append(State(atoms))
 
     return states
+
+
+def parse_goal_to_state(domain_path, problem_path, wlplan_domain):
+    """
+    Parses the PDDL problem file to extract the Goal and converts it
+    into a single wlplan.planning.State object.
+    """
+    try:
+        # Use pddlpy to extract goals
+        domprob = pddlpy.DomainProblem(domain_path, problem_path)
+        pddl_goals = domprob.goals()  # Returns a list of tuples or atoms
+
+        name_to_predicate = {p.name: p for p in wlplan_domain.predicates}
+        atoms = []
+
+        for g in pddl_goals:
+            # pddlpy returns goals as tuples like ('on', 'a', 'b')
+            # or objects with a .predicate attribute depending on version
+            if hasattr(g, "predicate"):
+                parts = g.predicate
+            else:
+                parts = g
+
+            pred_name = parts[0]
+            obj_names = list(parts[1:])
+
+            if pred_name in name_to_predicate:
+                atom = Atom(name_to_predicate[pred_name], obj_names)
+                atoms.append(atom)
+
+        return State(atoms)
+    except Exception as e:
+        # For simplicity, we raise to handle it in the main loop
+        raise ValueError(f"Goal parsing failed: {e}")
 
 
 def get_pddl_paths(domain, split, problem_name):
@@ -110,7 +149,7 @@ def main():
         # We need to accumulate all training data into one DomainDataset for 'collect'
         train_problem_datasets = []
 
-        for traj_file in tqdm(train_files, desc="  Parsing Train"):
+        for traj_file in tqdm(train_files, desc="  Parsing Train (Traj + Goal)"):
             prob_name = os.path.splitext(os.path.basename(traj_file))[0]
             _, prob_pddl = get_pddl_paths(domain_name, "train", prob_name)
 
@@ -120,15 +159,24 @@ def main():
             try:
                 # Parse Problem
                 wlplan_prob = parse_problem(domain_pddl_path, prob_pddl)
-                # Parse States
-                wlplan_states = parse_trajectory_to_states(traj_file, wlplan_domain)
 
-                if wlplan_states:
+                # A. Parse Trajectory States
+                states_list = parse_trajectory_to_states(traj_file, wlplan_domain)
+
+                # B. Parse Goal State
+                goal_state = parse_goal_to_state(
+                    domain_pddl_path, prob_pddl, wlplan_domain
+                )
+
+                # Add Goal to the list of states to collect vocabulary from
+                if states_list:
+                    states_list.append(goal_state)
+
                     train_problem_datasets.append(
-                        ProblemDataset(problem=wlplan_prob, states=wlplan_states)
+                        ProblemDataset(problem=wlplan_prob, states=states_list)
                     )
             except Exception:
-                # print(f"    Failed to parse {prob_name}: {e}")
+                print(f"    Failed to parse {prob_name}: {e}")
                 pass
 
         if not train_problem_datasets:
@@ -160,33 +208,55 @@ def main():
                     continue
 
                 try:
-                    # 1. Create a mini dataset for just this file
+                    # 0. Create a mini dataset for just this file
                     wlplan_prob = parse_problem(domain_pddl_path, prob_pddl)
-                    wlplan_states = parse_trajectory_to_states(traj_file, wlplan_domain)
 
-                    if not wlplan_states:
-                        continue
+                    # 1. Embed Trajectory
+                    traj_states = parse_trajectory_to_states(traj_file, wlplan_domain)
+                    if traj_states:
+                        traj_dataset = DomainDataset(
+                            domain=wlplan_domain,
+                            data=[
+                                ProblemDataset(problem=wlplan_prob, states=traj_states)
+                            ],
+                        )
+                        traj_embeddings = np.array(
+                            generator.embed(traj_dataset), dtype=np.float32
+                        )
 
-                    single_file_dataset = DomainDataset(
-                        domain=wlplan_domain,
-                        data=[
-                            ProblemDataset(problem=wlplan_prob, states=wlplan_states)
-                        ],
+                        # Flatten [1, T, D] -> [T, D]
+                        if len(traj_embeddings.shape) == 3:
+                            traj_embeddings = traj_embeddings[0]
+
+                        np.save(
+                            os.path.join(split_output_dir, f"{prob_name}.npy"),
+                            traj_embeddings,
+                        )
+
+                    # 2. Embed Goal
+                    goal_state = parse_goal_to_state(
+                        domain_pddl_path, prob_pddl, wlplan_domain
                     )
+                    if goal_state:
+                        # Wrap in dataset
+                        goal_dataset = DomainDataset(
+                            domain=wlplan_domain,
+                            data=[
+                                ProblemDataset(problem=wlplan_prob, states=[goal_state])
+                            ],
+                        )
+                        goal_embedding = np.array(
+                            generator.embed(goal_dataset), dtype=np.float32
+                        )
 
-                    # 2. Embed
-                    # Returns a list of lists (or numpy array depending on version)
-                    embeddings = generator.embed(single_file_dataset)
+                        # Flatten [1, 1, D] -> [D]
+                        if len(goal_embedding.shape) == 3:
+                            goal_embedding = goal_embedding[0][0]
 
-                    # 3. Save
-                    embeddings_np = np.array(embeddings, dtype=np.float32)
-
-                    # Flatten: embed returns [ [problem_1_states] ], we want [states]
-                    if len(embeddings_np.shape) == 3:
-                        embeddings_np = embeddings_np[0]
-
-                    save_path = os.path.join(split_output_dir, f"{prob_name}.npy")
-                    np.save(save_path, embeddings_np)
+                        np.save(
+                            os.path.join(split_output_dir, f"{prob_name}_goal.npy"),
+                            goal_embedding,
+                        )
 
                 except Exception as e:
                     print(f"Error embedding {prob_name}: {e}")

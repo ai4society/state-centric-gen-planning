@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=wlplan_embed
+#SBATCH --job-name=graph_embed
 #SBATCH --output=slurm-out/%x_%j.out
 #SBATCH --error=slurm-out/%x_%j.err
 #SBATCH --partition=wholenode           # Use full node for RAM

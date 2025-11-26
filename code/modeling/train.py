@@ -14,10 +14,23 @@ def evaluate(model, val_loader, criterion, device):
     """Computes loss on the validation set."""
     model.eval()
     total_loss = 0
+    count = 0
 
     with torch.no_grad():
         for states, goals, lengths in val_loader:
-            states, goals = states.to(device), goals.to(device)
+            # Need at least 2 states to predict next state
+            # Filter out trajectories with T=1 (input_lengths=0)
+            valid_mask = lengths > 1
+            if not valid_mask.any():
+                continue
+
+            states = states[valid_mask]
+            goals = goals[valid_mask]
+            lengths = lengths[valid_mask]
+
+            states = states.to(device)
+            goals = goals.to(device)
+            lengths = lengths.to(device)
 
             # Input: S_0 ... S_{T-1}
             input_states = states[:, :-1, :]
@@ -36,8 +49,12 @@ def evaluate(model, val_loader, criterion, device):
 
             loss = criterion(preds * mask, target_states * mask)
             total_loss += loss.item()
+            count += 1
 
-    return total_loss / len(val_loader)
+    if count == 0:
+        print("No valid trajectories in validation set. Returning 0 loss.")
+        return 0.0
+    return total_loss / count
 
 
 def train(args):
@@ -49,26 +66,38 @@ def train(args):
     train_ds = PlanningTrajectoryDataset(args.data_dir, args.domain, "train")
     val_ds = PlanningTrajectoryDataset(args.data_dir, args.domain, "validation")
 
+    if len(train_ds) == 0:
+        print(f"Error: No training data found for {args.domain}. Skipping.")
+        return
+
     train_loader = DataLoader(
         train_ds,
         batch_size=args.batch_size,
         shuffle=True,
         collate_fn=collate_trajectories,
-        num_workers=4,
+        num_workers=8,
     )
     val_loader = DataLoader(
         val_ds,
         batch_size=args.batch_size,
         collate_fn=collate_trajectories,
-        num_workers=4,
+        num_workers=8,
     )
 
-    # Determine input dimension
-    if len(train_ds) == 0:
-        raise ValueError(f"No training data found for {args.domain}")
+    # Determine input dimension safely
+    input_dim = 0
+    # Check first few items
+    for i in range(min(10, len(train_ds))):
+        sample_traj, _ = train_ds[i]
+        if sample_traj.dim() > 1:
+            input_dim = sample_traj.shape[1]
+            break
 
-    sample_traj, _ = train_ds[0]
-    input_dim = sample_traj.shape[1]
+    if input_dim == 0:
+        # Fallback
+        sample_traj, _ = train_ds[0]
+        input_dim = sample_traj.shape[-1]
+
     print(f"Feature Dimension: {input_dim}")
 
     # 2. Model
@@ -88,11 +117,23 @@ def train(args):
     for epoch in range(args.epochs):
         model.train()
         train_loss = 0
+        count = 0
 
         # Training Loop
-        pbar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{args.epochs}")
+        pbar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{args.epochs}", leave=False)
         for states, goals, lengths in pbar:
-            states, goals = states.to(device), goals.to(device)
+            # Filter T=1
+            valid_mask = lengths > 1
+            if not valid_mask.any():
+                continue
+
+            states = states[valid_mask]
+            goals = goals[valid_mask]
+            lengths = lengths[valid_mask]
+
+            states = states.to(device)
+            goals = goals.to(device)
+            lengths = lengths.to(device)
 
             # Prepare Inputs and Targets
             # Input: S_0 ... S_{T-1}
@@ -127,14 +168,17 @@ def train(args):
             optimizer.step()
 
             train_loss += loss.item()
+            count += 1
             pbar.set_postfix({"loss": loss.item()})
 
-        avg_train_loss = train_loss / len(train_loader)
+        avg_train_loss = train_loss / count if count > 0 else 0
 
         # Validation Loop
         avg_val_loss = evaluate(model, val_loader, criterion, device)
 
-        print(f"  Train Loss: {avg_train_loss:.6f} | Val Loss: {avg_val_loss:.6f}")
+        print(
+            f"Epoch {epoch + 1}: Train Loss {avg_train_loss:.6f} | Val Loss {avg_val_loss:.6f}"
+        )
 
         # Log
         with open(log_file, "a") as f:

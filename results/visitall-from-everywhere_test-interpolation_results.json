@@ -1,0 +1,187 @@
+[
+  {
+    "problem": "w01h02-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w01h02-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w01h05-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w01h05-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w01h05-03.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w01h08-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w01h08-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w01h08-03.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w01h09-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w01h09-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w01h09-03.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w02h01-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w02h01-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w02h04-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w02h04-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w02h04-03.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w03h03-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w03h03-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w03h03-03.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w03h05-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w03h05-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w03h05-03.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w04h02-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w04h02-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w04h02-03.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w05h01-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w05h01-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w05h01-03.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w05h03-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w05h03-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w05h03-03.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w08h01-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w08h01-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w08h01-03.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w09h01-01.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w09h01-02.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "w09h01-03.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  }
+]

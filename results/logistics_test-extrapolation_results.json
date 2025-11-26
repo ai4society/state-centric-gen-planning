@@ -1,0 +1,92 @@
+[
+  {
+    "problem": "probLOGISTICS-10-0.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-10-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-11-0.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-11-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-12-0.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-12-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-13-0.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-13-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-14-0.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-14-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-15-0.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-15-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-7-0.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-7-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-8-0.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-8-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-9-0.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-9-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  }
+]

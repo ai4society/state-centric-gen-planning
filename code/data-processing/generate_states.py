@@ -20,6 +20,7 @@ HOME = os.path.expanduser("~")
 ROOT_DIR = f"{HOME}/planning/"
 VAL_PATH = os.environ.get("VAL_PATH", f"{ROOT_DIR}VAL/bin/Validate")
 
+
 def generate_state_trajectory(args):
     plan_file, domain_file, problem_file, output_state_file = args
     problem_id = str(problem_file)

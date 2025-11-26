@@ -1,12 +1,13 @@
 import glob
+import hashlib
 import os
 import re
 
-import pddlpy
+import numpy as np
+import pddl
+import pddl.logic.base
+import pddl.logic.predicates
 from tqdm import tqdm
-from wlplan.data import DomainDataset, ProblemDataset
-from wlplan.feature_generator import init_feature_generator
-from wlplan.planning import Atom, State, parse_domain, parse_problem
 
 # Regex to parse "(on a b)" -> "on a b"
 PREDICATE_REGEX = re.compile(r"\(([\w-]+(?: [\w-]+)*)\)")
@@ -16,90 +17,172 @@ class WLEncoder:
     def __init__(self, domain_pddl_path, iterations=2):
         self.domain_pddl_path = domain_pddl_path
         self.iterations = iterations
-        self.wlplan_domain = parse_domain(domain_pddl_path)
-        self.generator = init_feature_generator(
-            feature_algorithm="wl",
-            domain=self.wlplan_domain,
-            graph_representation="ilg",
-            iterations=self.iterations,
-            pruning="none",
-            multiset_hash=True,
-        )
-        self.name_to_predicate = {p.name: p for p in self.wlplan_domain.predicates}
+
+        # Vocabulary: Map specific WL hash strings to integer indices
+        self.vocab = {}
         self.is_collected = False
 
-    def parse_state_string_to_wl_state(self, state_str_or_list):
-        """
-        Converts a list of predicate strings ["(on a b)", "(clear a)"]
-        or a raw string to a wlplan.State object.
-        """
-        if isinstance(state_str_or_list, str):
-            atom_strings = PREDICATE_REGEX.findall(state_str_or_list)
-        else:
-            # Assume list of strings like "(on a b)"
-            atom_strings = []
-            for s in state_str_or_list:
-                # clean parens if present
-                clean = s.replace("(", "").replace(")", "")
-                atom_strings.append(clean)
+        # Parse domain using the 'pddl' library (robust)
+        print(f"  [GC-WL] Parsing Domain: {domain_pddl_path}")
+        self.pddl_domain = pddl.parse_domain(domain_pddl_path)
 
-        atoms = []
-        for atom_str in atom_strings:
-            parts = atom_str.split()
-            pred_name = parts[0]
-            obj_names = parts[1:]
+        # Cache domain predicates to know arity (unary vs binary)
+        # p.name is string, p.arity is int
+        self.domain_info = {
+            p.name.lower(): p.arity for p in self.pddl_domain.predicates
+        }
 
-            if pred_name in self.name_to_predicate:
-                atom = Atom(
-                    predicate=self.name_to_predicate[pred_name], objects=obj_names
+    def _get_initial_graph(self, objects, state_atoms, goal_atoms):
+        """
+        Builds a graph where nodes = objects.
+        Features include current state AND goal state info.
+        """
+        # 1. Initialize Nodes
+        # Graph structure: {obj_name: {'attributes': [], 'neighbors': []}}
+        graph = {obj: {"attributes": [], "neighbors": []} for obj in objects}
+
+        # 2. Process State Atoms
+        for atom in state_atoms:
+            parts = atom.replace("(", "").replace(")", "").lower().split()
+            if not parts:
+                continue
+            pred = parts[0]
+            args = parts[1:]
+
+            if pred not in self.domain_info:
+                continue  # Skip unknown predicates (e.g. equality)
+
+            arity = self.domain_info[pred]
+
+            if arity == 1 and len(args) == 1:
+                # Unary State Feature: clear(a) -> a has attr "state-clear"
+                if args[0] in graph:
+                    graph[args[0]]["attributes"].append(f"state-{pred}")
+            elif arity == 2 and len(args) == 2:
+                # Binary State Edge: on(a, b) -> a -[state-on]-> b
+                u, v = args
+                if u in graph and v in graph:
+                    graph[u]["neighbors"].append((f"state-{pred}", v))
+                    # We treat edges as directed. For WL, we can add inverse if needed,
+                    # but standard directed WL is usually fine for planning.
+
+        # 3. Process Goal Atoms (The "Goal-Aware" part)
+        for atom in goal_atoms:
+            parts = atom.replace("(", "").replace(")", "").lower().split()
+            if not parts:
+                continue
+            pred = parts[0]
+            args = parts[1:]
+
+            if pred not in self.domain_info:
+                continue
+
+            arity = self.domain_info[pred]
+
+            if arity == 1 and len(args) == 1:
+                # Unary Goal Feature: goal-clear(a)
+                if args[0] in graph:
+                    graph[args[0]]["attributes"].append(f"goal-{pred}")
+            elif arity == 2 and len(args) == 2:
+                # Binary Goal Edge: goal-on(a, b)
+                u, v = args
+                if u in graph and v in graph:
+                    graph[u]["neighbors"].append((f"goal-{pred}", v))
+
+        # 4. Sort attributes for determinism
+        for obj in graph:
+            graph[obj]["attributes"].sort()
+            graph[obj]["neighbors"].sort()
+
+        return graph
+
+    def _compute_wl_hashes(self, graph):
+        """
+        Runs k-iterations of Weisfeiler-Leman.
+        Returns a list of all colors found in the final graph.
+        """
+        # Initial Coloring: Hash of attributes
+        # current_colors: {obj_name: hash_string}
+        current_colors = {}
+        for obj, data in graph.items():
+            # Hash the sorted list of attributes
+            attr_str = "|".join(data["attributes"])
+            current_colors[obj] = hashlib.md5(attr_str.encode()).hexdigest()
+
+        # Iterations
+        for _ in range(self.iterations):
+            new_colors = {}
+            for obj in graph:
+                # Collect neighbor colors
+                # neighbor_desc = list of (edge_label, neighbor_color)
+                neighbors = graph[obj]["neighbors"]
+                neighbor_descriptors = []
+                for label, neighbor in neighbors:
+                    neighbor_descriptors.append(f"{label}:{current_colors[neighbor]}")
+
+                # Sort to ensure invariance to neighbor order
+                neighbor_descriptors.sort()
+
+                # Aggregate: (SelfColor, Neighbors)
+                aggregate_str = (
+                    current_colors[obj] + "||" + ",".join(neighbor_descriptors)
                 )
-                atoms.append(atom)
+                new_hash = hashlib.md5(aggregate_str.encode()).hexdigest()
+                new_colors[obj] = new_hash
 
-        return State(atoms)
+            current_colors = new_colors
 
-    def parse_pddl_goal_to_wl_state(self, problem_pddl_path):
-        """Extracts goal from PDDL and converts to wlplan.State"""
-        domprob = pddlpy.DomainProblem(self.domain_pddl_path, problem_pddl_path)
-        pddl_goals = domprob.goals()
+        # Return all node colors (multiset)
+        return list(current_colors.values())
 
-        atoms = []
-        for g in pddl_goals:
-            # Handle pddlpy variations
-            if hasattr(g, "predicate"):
-                parts = g.predicate
-            else:
-                parts = g
+    def parse_state_string_to_atoms(self, state_str_or_list):
+        if isinstance(state_str_or_list, str):
+            return PREDICATE_REGEX.findall(state_str_or_list)
+        return state_str_or_list
 
-            pred_name = parts[0]
-            obj_names = list(parts[1:])
+    def parse_pddl_goal(self, problem_path):
+        """Extracts goal atoms and objects from PDDL using the 'pddl' library."""
+        # Parse problem
+        problem = pddl.parse_problem(problem_path)
 
-            if pred_name in self.name_to_predicate:
-                atom = Atom(self.name_to_predicate[pred_name], obj_names)
-                atoms.append(atom)
+        # Collect objects (problem objects + domain constants)
+        objects = set()
+        for o in problem.objects:
+            objects.add(o.name)
+        for o in self.pddl_domain.constants:
+            objects.add(o.name)
 
-        return State(atoms)
+        # Extract Goal Atoms recursively
+        goals = []
+
+        def visit(node):
+            if isinstance(node, pddl.logic.predicates.Predicate):
+                # node.name is predicate name, node.terms are arguments
+                # Handle terms that might be objects or just strings
+                args = [t.name if hasattr(t, "name") else str(t) for t in node.terms]
+                s = f"({node.name} {' '.join(args)})"
+                goals.append(s)
+            elif hasattr(node, "operands"):  # Handle And, Or, etc.
+                for op in node.operands:
+                    visit(op)
+            elif hasattr(node, "_operands"):  # Fallback for older pddl versions
+                for op in node._operands:
+                    visit(op)
+            # Note: We ignore 'Not' for graph edges usually, or can be handled it if needed.
+
+        visit(problem.goal)
+
+        return list(objects), goals
 
     def collect_vocabulary(self, train_states_dir):
-        """
-        Iterates over all .traj files in the training directory to build the WL hash map.
-        This MUST be called before embedding anything.
-        """
-        print(f"  [WL-Wrapper] Collecting vocabulary from {train_states_dir}...")
+        print(f"  [GC-WL] Collecting vocabulary from {train_states_dir}...")
+        self.vocab = {}
+        unique_hashes = set()
+
         train_files = glob.glob(os.path.join(train_states_dir, "*.traj"))
-
-        if not train_files:
-            raise ValueError(f"No training files found in {train_states_dir}")
-
-        problem_datasets = []
-
-        # We need the corresponding PDDL for every traj to create a ProblemDataset
-        # Standard structure: data/states/<dom>/train/X.traj -> data/pddl/<dom>/train/X.pddl
-
-        # Heuristic to find PDDL dir based on states dir structure
-        # .../data/states/blocks/train -> .../data/pddl/blocks/train
         pddl_train_dir = train_states_dir.replace("states", "pddl")
 
-        for traj_file in tqdm(train_files, desc="  Parsing Train Data"):
+        for traj_file in tqdm(train_files, desc="  Parsing Traces"):
             prob_name = os.path.splitext(os.path.basename(traj_file))[0]
             prob_pddl = os.path.join(pddl_train_dir, f"{prob_name}.pddl")
 
@@ -107,43 +190,65 @@ class WLEncoder:
                 continue
 
             try:
-                wlplan_prob = parse_problem(self.domain_pddl_path, prob_pddl)
+                # 1. Get Objects and Goal
+                objects, goal_atoms = self.parse_pddl_goal(prob_pddl)
 
-                # Parse Trajectory
+                # 2. Read Trajectory
                 with open(traj_file, "r") as f:
-                    content = f.read()
-                # Split by newlines to get states
-                lines = content.strip().split("\n")
-                states = [self.parse_state_string_to_wl_state(line) for line in lines]
+                    lines = f.read().strip().split("\n")
 
-                # Parse Goal (Important! Goals contain atoms that might not be in trajectories)
-                goal_state = self.parse_pddl_goal_to_wl_state(prob_pddl)
-                states.append(goal_state)
+                # 3. Process states
+                for line in lines:
+                    state_atoms = self.parse_state_string_to_atoms(line)
+                    graph = self._get_initial_graph(objects, state_atoms, goal_atoms)
+                    colors = self._compute_wl_hashes(graph)
+                    unique_hashes.update(colors)
 
-                problem_datasets.append(
-                    ProblemDataset(problem=wlplan_prob, states=states)
-                )
             except Exception:
+                # print(f"Error reading {prob_name}: {e}")
                 pass
 
-        full_dataset = DomainDataset(domain=self.wlplan_domain, data=problem_datasets)
-        self.generator.collect(full_dataset)
+        # Build Vocab Map
+        sorted_hashes = sorted(list(unique_hashes))
+        self.vocab = {h: i for i, h in enumerate(sorted_hashes)}
         self.is_collected = True
-        print("  [WL-Wrapper] Vocabulary collected.")
+        print(f"  [GC-WL] Vocabulary collected. Size: {len(self.vocab)}")
 
-    def embed_state(self, wl_state, problem_pddl_path):
-        """
-        Embeds a single wlplan.State object.
-        Requires the problem PDDL to define objects/types context.
-        """
+    def embed_state(self, state_atoms_or_obj, problem_pddl_path):
         if not self.is_collected:
-            raise RuntimeError("Must call collect_vocabulary before embedding.")
+            raise RuntimeError("Vocab not collected")
 
-        wlplan_prob = parse_problem(self.domain_pddl_path, problem_pddl_path)
-        dataset = DomainDataset(
-            domain=self.wlplan_domain,
-            data=[ProblemDataset(problem=wlplan_prob, states=[wl_state])],
-        )
-        # Returns [1, 1, D]
-        emb = self.generator.embed(dataset)
-        return emb[0][0]
+        # Handle input types (if legacy code passes State objects)
+        if hasattr(state_atoms_or_obj, "atoms"):
+            # Extract string representation from wlplan State object if passed
+            state_atoms = []
+            for atom in state_atoms_or_obj.atoms:
+                args = " ".join(atom.objects)
+                state_atoms.append(f"({atom.predicate.name} {args})")
+        else:
+            state_atoms = self.parse_state_string_to_atoms(state_atoms_or_obj)
+
+        # We need objects and goals again
+        objects, goal_atoms = self.parse_pddl_goal(problem_pddl_path)
+
+        # Build Graph
+        graph = self._get_initial_graph(objects, state_atoms, goal_atoms)
+
+        # Run WL
+        colors = self._compute_wl_hashes(graph)
+
+        # Vectorize (Histogram)
+        vec = np.zeros(len(self.vocab), dtype=np.float32)
+        for c in colors:
+            if c in self.vocab:
+                vec[self.vocab[c]] += 1.0
+
+        return vec
+
+    # Adapter methods to match existing interface
+    def parse_state_string_to_wl_state(self, s):
+        return s
+
+    def parse_pddl_goal_to_wl_state(self, p):
+        _, goals = self.parse_pddl_goal(p)
+        return goals

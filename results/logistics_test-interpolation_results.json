@@ -1,0 +1,47 @@
+[
+  {
+    "problem": "p04g02-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "p04g02-2.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "p04g02-3.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "p04g04-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "p04g04-2.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "p04g04-3.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-4-0.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-4-1.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "probLOGISTICS-4-2.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  }
+]

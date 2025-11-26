@@ -1,0 +1,82 @@
+[
+  {
+    "problem": "prob05.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob06.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob07.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob08.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob09.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob10.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob11.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob12.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob13.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob14.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob15.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob16.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob17.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob18.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob19.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  },
+  {
+    "problem": "prob20.pddl",
+    "solved": false,
+    "error": "'Task' object has no attribute 'goal'"
+  }
+]

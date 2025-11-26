@@ -35,22 +35,44 @@ class PlanningTrajectoryDataset(Dataset):
         traj = np.load(traj_path).astype(np.float32)
         goal = np.load(goal_path).astype(np.float32)
 
+        # Ensure Goal is at least 1D [D]
+        if goal.ndim == 0:
+            goal = goal.reshape(1)
+
+        # Ensure Traj is 2D [T, D]
+        if traj.ndim == 1:
+            # Ambiguity: Is it [T] (D=1) or [D] (T=1)?
+            # We use Goal dimension D to decide.
+            D = goal.shape[0]
+
+            if traj.shape[0] == D:
+                # Likely T=1, D=D
+                traj = traj.reshape(1, D)
+            else:
+                # Likely T=T, D=1
+                traj = traj.reshape(-1, 1)
+
         return torch.from_numpy(traj), torch.from_numpy(goal)
 
 
 def collate_trajectories(batch):
     """
     Custom collate function to handle variable length trajectories.
+    Pads sequences to the longest in the batch.
     Returns:
         padded_trajs: [B, MaxT, D]
         goals: [B, D]
         lengths: [B]
     """
     trajs, goals = zip(*batch)
+
+    # Lengths for packing
     lengths = torch.tensor([t.shape[0] for t in trajs])
 
-    # Pad trajectories
+    # Pad trajectories: [B, MaxT, D]
     padded_trajs = torch.nn.utils.rnn.pad_sequence(trajs, batch_first=True)
+
+    # Stack goals: [B, D]
     goals = torch.stack(goals)
 
     return padded_trajs, goals, lengths

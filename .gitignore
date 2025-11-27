@@ -4,6 +4,7 @@
 data/pddl-test
 own/
 slurm-out/
+packages/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -6,11 +6,12 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "numpy>=2.2.6",
+    "pddl>=0.4.1",
     "pddlpy>=0.4.4",
     "pyperplan>=2.1",
     "torch>=2.9.1",
     "tqdm>=4.67.1",
-    "wlplan ; sys_platform == 'linux'",
+    "wlplan",
 ]
 
 [tool.uv.workspace]
@@ -19,7 +20,7 @@ members = [
 ]
 
 [tool.uv.sources]
-wlplan = { git = "https://github.com/DillonZChen/wlplan.git" }
+wlplan = { path = "packages/wlplan" }
 
 [dependency-groups]
 dev = [

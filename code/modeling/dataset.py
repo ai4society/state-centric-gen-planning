@@ -25,6 +25,18 @@ class PlanningTrajectoryDataset(Dataset):
     def __len__(self):
         return len(self.traj_files)
 
+    # def normalize(self, vec):
+    #     """
+    #     L1 Normalization: Converts counts to frequencies.
+    #     Input: [..., D]
+    #     Output: [..., D]
+    #     """
+    #     # Sum across the last dimension (features)
+    #     sums = vec.sum(axis=-1, keepdims=True)
+    #     # Avoid division by zero
+    #     sums[sums == 0] = 1.0
+    #     return vec / sums
+
     def __getitem__(self, idx):
         traj_path = self.traj_files[idx]
         goal_path = traj_path.replace(".npy", "_goal.npy")
@@ -51,6 +63,9 @@ class PlanningTrajectoryDataset(Dataset):
             else:
                 # Likely T=T, D=1
                 traj = traj.reshape(-1, 1)
+
+        # traj = self.normalize(traj)
+        # goal = self.normalize(goal)
 
         return torch.from_numpy(traj), torch.from_numpy(goal)
 

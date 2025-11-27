@@ -1,46 +1,67 @@
 import argparse
 import json
 import os
-from code.common.wl_wrapper import WLEncoder
 from code.modeling.models import StateCentricLSTM
 
 import numpy as np
 import torch
 from pyperplan.grounding import ground
-
-# Pyperplan imports
 from pyperplan.pddl.parser import Parser
 from tqdm import tqdm
+from wlplan.data import DomainDataset, ProblemDataset
+from wlplan.feature_generator import load_feature_generator
+from wlplan.planning import Atom, State, parse_domain, parse_problem
+
+# def normalize_np(vec):
+#     """L1 Normalization for single vector"""
+#     s = vec.sum()
+#     return vec / s if s > 0 else vec
 
 
-def solve_problem(prob_file, domain_path, prob_path, encoder, model, device, max_steps):
+def solve_problem(
+    prob_file,
+    domain_path,
+    prob_path,
+    feature_gen,
+    model,
+    device,
+    max_steps,
+    wl_domain,
+    pred_map,
+):
     """
     Runs the Latent Space Search for a single problem.
     """
-    # 1. Setup Pyperplan Task
-    # Parse and ground the problem to get operators and initial state
+    # 1. Pyperplan Parsing (for successors)
     parser = Parser(domain_path, prob_path)
     dom = parser.parse_domain()
     prob = parser.parse_problem(dom)
     task = ground(prob)
 
-    # 2. Initialize Current State
-    # task.initial_state is a set of strings (e.g., "(on a b)")
-    current_atoms = task.initial_state
+    # 2. WLPlan Context (for embedding)
+    wl_prob = parse_problem(domain_path, prob_path)
 
     # 3. Embed Goal
-    # We use task.goals (list of strings) to get the goal embedding.
-    # The encoder needs the prob_path to build the goal-aware graph structure.
-    goal_atoms_list = task.goals
-    goal_vec = encoder.embed_state(goal_atoms_list, prob_path)
-    goal_emb = torch.tensor(goal_vec).float().to(device).unsqueeze(0)  # [1, D]
+    goal_atoms = list(wl_prob.positive_goals)
+    goal_state = State(goal_atoms)
+
+    # Create mini dataset for goal
+    goal_ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [goal_state])])
+
+    # Use [0] to get the vector, not [0][0]
+    goal_embs = feature_gen.embed(goal_ds)
+    goal_vec_raw = np.array(goal_embs[0], dtype=np.float32)
+
+    # NORMALIZE
+    # goal_vec = normalize_np(goal_vec_raw)
+    goal_vec = goal_vec_raw
+    goal_tensor = torch.tensor(goal_vec).float().to(device).unsqueeze(0)  # [1, D]
 
     # 4. Search Loop
+    current_atoms = task.initial_state  # Set of strings: {"(on a b)", ...}
     plan = []
     hidden = None
     solved = False
-
-    # Convert goals to set for O(1) subset checking
     goal_set = set(task.goals)
 
     for step in range(max_steps):
@@ -49,27 +70,51 @@ def solve_problem(prob_file, domain_path, prob_path, encoder, model, device, max
             solved = True
             break
 
+        # Convert Pyperplan State (strings) -> WLPlan State (Atoms)
+        wl_atoms = []
+        for a_str in current_atoms:
+            # Parse "(on a b)" -> name="on", args=["a", "b"]
+            content = a_str.replace("(", "").replace(")", "")
+            parts = content.split()
+            if not parts:
+                continue
+
+            p_name = parts[0]
+            p_args = parts[1:]
+
+            if p_name in pred_map:
+                wl_atoms.append(Atom(pred_map[p_name], p_args))
+
+        curr_state = State(wl_atoms)
+
         # Embed Current State
-        # Convert set to list for the encoder
-        curr_vec = encoder.embed_state(list(current_atoms), prob_path)
-        curr_emb = torch.tensor(curr_vec).float().to(device)
-        curr_emb_in = curr_emb.unsqueeze(0).unsqueeze(0)  # [1, 1, D]
+        curr_ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [curr_state])])
+
+        # Use [0] to get the vector
+        curr_embs = feature_gen.embed(curr_ds)
+        curr_vec_raw = np.array(curr_embs[0], dtype=np.float32)
+
+        # Normalize
+        # curr_vec = normalize_np(curr_vec_raw)
+        curr_vec = curr_vec_raw
+        curr_tensor = (
+            torch.tensor(curr_vec).float().to(device).unsqueeze(0).unsqueeze(0)
+        )  # [1, 1, D]
 
         # Predict Next Latent State
         with torch.no_grad():
-            pred_next_emb, hidden = model(curr_emb_in, goal_emb, hidden=hidden)
+            pred_next_emb, hidden = model(curr_tensor, goal_tensor, hidden=hidden)
             target_vec = pred_next_emb.squeeze().cpu().numpy()
 
         # Generate Successors
         candidates = []
         for op in task.operators:
             if op.applicable(current_atoms):
-                # op.apply returns a new set of atoms
                 next_atoms = op.apply(current_atoms)
                 candidates.append((op.name, next_atoms))
 
         if not candidates:
-            break  # Dead end
+            break
 
         # Score Candidates
         best_action = None
@@ -77,10 +122,26 @@ def solve_problem(prob_file, domain_path, prob_path, encoder, model, device, max
         best_next_atoms = None
 
         for op_name, next_atoms in candidates:
-            # Embed candidate state
-            cand_vec = encoder.embed_state(list(next_atoms), prob_path)
+            # Convert Candidate -> WL State
+            cand_wl_atoms = []
+            for a_str in next_atoms:
+                content = a_str.replace("(", "").replace(")", "")
+                parts = content.split()
+                if parts and parts[0] in pred_map:
+                    cand_wl_atoms.append(Atom(pred_map[parts[0]], parts[1:]))
 
-            # Calculate distance to predicted state
+            cand_state = State(cand_wl_atoms)
+            cand_ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [cand_state])])
+
+            # Use [0] to get the vector
+            cand_embs = feature_gen.embed(cand_ds)
+            cand_vec_raw = np.array(cand_embs[0], dtype=np.float32)
+
+            # NORMALIZE
+            # cand_vec = normalize_np(cand_vec_raw)
+            cand_vec = cand_vec_raw
+
+            # Distance
             dist = np.linalg.norm(cand_vec - target_vec)
 
             if dist < best_dist:
@@ -88,7 +149,6 @@ def solve_problem(prob_file, domain_path, prob_path, encoder, model, device, max
                 best_action = op_name
                 best_next_atoms = next_atoms
 
-        # Step
         if best_action:
             plan.append(best_action)
             current_atoms = best_next_atoms
@@ -102,34 +162,31 @@ def run_inference(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    # 1. Setup WL Encoder (this must match training)
-    print("Initializing WL Encoder (Re-collecting training vocab)...")
-    domain_pddl_path = os.path.join(args.pddl_dir, args.domain, "domain.pddl")
-    encoder = WLEncoder(domain_pddl_path, iterations=args.iterations)
-    encoder.collect_vocabulary(os.path.join(args.states_dir, args.domain, "train"))
-
-    # 2. Load Model
-    # Hack to get input dim: embed a dummy goal
-    dummy_prob_path = os.path.join(
-        args.pddl_dir,
-        args.domain,
-        "train",
-        os.listdir(os.path.join(args.pddl_dir, args.domain, "train"))[0],
+    # 1. Load WL Generator
+    model_path = os.path.join(
+        args.data_dir, "encodings", "models", f"{args.domain}_wl.json"
     )
-    # Ensure we picked a pddl file
-    if not dummy_prob_path.endswith(".pddl"):
-        dummy_prob_path = dummy_prob_path.replace(".traj", ".pddl")
+    if not os.path.exists(model_path):
+        print(f"Error: WL Model not found at {model_path}")
+        return
 
-    # Embed dummy goal to get dimension
-    dummy_vec = encoder.embed_state([], dummy_prob_path)  # Empty state is valid
-    input_dim = dummy_vec.shape[0]
+    print(f"Loading WL Model from {model_path}...")
+    feature_gen = load_feature_generator(model_path)
+    input_dim = feature_gen.get_n_features()
+    print(f"Feature Dimension: {input_dim}")
 
-    print(f"Loading model from {args.checkpoint} (Dim: {input_dim})...")
+    # 2. Load Domain (for parsing)
+    domain_pddl = os.path.join(args.pddl_dir, args.domain, "domain.pddl")
+    wl_domain = parse_domain(domain_pddl)
+    pred_map = {p.name: p for p in wl_domain.predicates}
+
+    # 3. Load LSTM
+    print(f"Loading LSTM from {args.checkpoint}...")
     model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
 
-    # 3. Run on Splits
+    # 4. Run on Splits
     splits = ["test-interpolation", "test-extrapolation"]
 
     for split in splits:
@@ -145,24 +202,26 @@ def run_inference(args):
 
         for prob_file in tqdm(prob_files, desc=f"Solving {split}"):
             prob_path = os.path.join(split_dir, prob_file)
-
             try:
                 res = solve_problem(
-                    prob_file,
-                    domain_pddl_path,
-                    prob_path,
-                    encoder,
-                    model,
-                    device,
-                    args.max_steps,
+                    prob_file=prob_file,
+                    domain_path=domain_pddl,
+                    prob_path=prob_path,
+                    feature_gen=feature_gen,
+                    model=model,
+                    device=device,
+                    max_steps=args.max_steps,
+                    wl_domain=wl_domain,
+                    pred_map=pred_map,
                 )
                 results.append(res)
                 if res["solved"]:
                     solved_count += 1
             except Exception as e:
-                print(f"Error solving {prob_file}: {e}")
-                # import traceback
-                # traceback.print_exc()
+                import traceback
+
+                traceback.print_exc()
+                print(f"Error: {e}")
                 results.append({"problem": prob_file, "solved": False, "error": str(e)})
 
         # Report
@@ -180,12 +239,9 @@ def run_inference(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--domain", required=True)
-    parser.add_argument("--pddl_dir", default="data/pddl")
-    parser.add_argument("--states_dir", default="data/states")
     parser.add_argument("--checkpoint", required=True)
-    parser.add_argument(
-        "--iterations", type=int, default=2, help="Must match generation"
-    )
+    parser.add_argument("--pddl_dir", default="data/pddl")
+    parser.add_argument("--data_dir", default="data")
     parser.add_argument("--results_dir", default="results")
     parser.add_argument("--hidden_dim", type=int, default=256)
     parser.add_argument("--max_steps", type=int, default=100)

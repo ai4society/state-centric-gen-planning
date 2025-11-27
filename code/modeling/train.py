@@ -58,7 +58,14 @@ def evaluate(model, val_loader, criterion, device):
 
 
 def train(args):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # cuda -> metal -> cpu
+    device = torch.device(
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
     os.makedirs(args.save_dir, exist_ok=True)
 
     # 1. Dataset
@@ -191,7 +198,9 @@ def train(args):
                 model.state_dict(),
                 os.path.join(args.save_dir, f"{args.domain}_lstm_best.pt"),
             )
-            print("  -> Saved Best Model")
+            print(
+                f"  -> Saved Best Model to {os.path.join(args.save_dir, f'{args.domain}_lstm_best.pt')}"
+            )
 
         # Save Last Model (Checkpoint)
         if (epoch + 1) % 10 == 0:

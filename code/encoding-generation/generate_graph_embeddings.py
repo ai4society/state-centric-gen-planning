@@ -1,130 +1,193 @@
 import argparse
 import os
+import re
+
 import numpy as np
 from tqdm import tqdm
-from code.common.wl_wrapper import WLEncoder
+
+# WLPlan Imports
+from wlplan.data import DomainDataset, ProblemDataset
+from wlplan.feature_generator import init_feature_generator
+from wlplan.planning import Atom, State, parse_domain, parse_problem
 
 # Configuration
 DATA_DIR = "./data"
 OUTPUT_DIR = os.path.join(DATA_DIR, "encodings", "graphs")
+MODEL_DIR = os.path.join(DATA_DIR, "encodings", "models")
 ALL_DOMAINS = ["blocks", "gripper", "logistics", "visitall-from-everywhere"]
 SPLITS = ["train", "validation", "test-interpolation", "test-extrapolation"]
 
 
-def process_single_file(task_args, encoder):
+def parse_traj_line_to_state(line, pred_map):
     """
-    Worker function for embedding.
+    Parses a line like "(on a b) (clear c)" into a wlplan State object.
     """
-    traj_path, prob_pddl, out_traj_path, out_goal_path = task_args
+    line = line.strip()
+    if not line:
+        return State([])
 
-    try:
-        # A. Embed Trajectory
-        with open(traj_path, "r") as f:
-            lines = f.read().strip().split("\n")
+    # Regex to find all (predicate arg1 arg2 ...) groups
+    matches = re.findall(r"\(([\w-]+(?: [\w-]+)*)\)", line)
+    atoms = []
 
-        traj_embs = []
-        for line in lines:
-            s = encoder.parse_state_string_to_wl_state(line)
-            emb = encoder.embed_state(s, prob_pddl)
-            traj_embs.append(emb)
+    for m in matches:
+        parts = m.split()
+        pred_name = parts[0]
+        objs = parts[1:]
 
-        np.save(out_traj_path, np.array(traj_embs))
+        if pred_name in pred_map:
+            # Create Atom: (Predicate, [objects])
+            atoms.append(Atom(pred_map[pred_name], objs))
 
-        # B. Embed Goal
-        g_state = encoder.parse_pddl_goal_to_wl_state(prob_pddl)
-        g_emb = encoder.embed_state(g_state, prob_pddl)
-        np.save(out_goal_path, np.array(g_emb))
-
-        return True
-    except Exception as e:
-        print(f"Error processing {traj_path}: {e}")
-        return False
+    return State(atoms)
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--iterations", type=int, default=2, help="WL iterations (k-hop)"
-    )
-    parser.add_argument(
-        "--domain", type=str, default=None, help="Specific domain to run (e.g., blocks)"
-    )
+    parser.add_argument("--iterations", type=int, default=2, help="WL iterations")
+    parser.add_argument("--domain", type=str, default=None, help="Specific domain")
     args = parser.parse_args()
 
     domains_to_run = [args.domain] if args.domain else ALL_DOMAINS
 
-    for domain in domains_to_run:
-        if domain not in ALL_DOMAINS:
-            print(f"Warning: {domain} is not in the standard list, but trying anyway.")
+    for domain_name in domains_to_run:
+        print(f"\n=== Processing Domain: {domain_name} ===")
 
-        print(f"\n=== Processing Domain: {domain} ===")
-        domain_pddl = os.path.join(DATA_DIR, "pddl", domain, "domain.pddl")
+        # Paths
+        domain_pddl = os.path.join(DATA_DIR, "pddl", domain_name, "domain.pddl")
+        train_states_dir = os.path.join(DATA_DIR, "states", domain_name, "train")
+
         if not os.path.exists(domain_pddl):
-            print(f"  [Warn] Domain PDDL not found at {domain_pddl}. Skipping.")
+            print(f"  [Error] Domain PDDL not found: {domain_pddl}")
             continue
 
-        # 1. Initialize and Collect (MUST BE SEQUENTIAL)
-        # The vocabulary hash map is built here.
-        encoder = WLEncoder(domain_pddl, iterations=args.iterations)
-        train_states_dir = os.path.join(DATA_DIR, "states", domain, "train")
-
+        # 1. Parse Domain
         try:
-            encoder.collect_vocabulary(train_states_dir)
+            wl_domain = parse_domain(domain_pddl)
         except Exception as e:
-            print(f"Skipping {domain} due to collection error: {e}")
+            print(f"  [Error] Failed to parse domain: {e}")
             continue
 
-        # 2. Prepare Tasks
-        tasks = []
+        pred_map = {p.name: p for p in wl_domain.predicates}
+
+        # 2. Initialize Feature Generator (ILG = Instance Learning Graph)
+        feature_gen = init_feature_generator(
+            feature_algorithm="wl",
+            domain=wl_domain,
+            graph_representation="ilg",
+            iterations=args.iterations,
+            pruning="none",
+            multiset_hash=True,
+        )
+
+        # 3. Collect Vocabulary (Train Split Only)
+        print("  [WL] Collecting vocabulary from training data...")
+
+        # We need to load a subset of training data to build the vocabulary.
+        # Loading ALL training states might be slow, but it ensures full coverage.
+        train_files = sorted(
+            [f for f in os.listdir(train_states_dir) if f.endswith(".traj")]
+        )
+        pddl_train_dir = os.path.join(DATA_DIR, "pddl", domain_name, "train")
+
+        wl_problems = []
+
+        for t_file in tqdm(train_files, desc="Parsing Train"):
+            prob_name = t_file.replace(".traj", "")
+            prob_pddl = os.path.join(pddl_train_dir, f"{prob_name}.pddl")
+            traj_path = os.path.join(train_states_dir, t_file)
+
+            if not os.path.exists(prob_pddl):
+                continue
+
+            try:
+                wl_prob = parse_problem(domain_pddl, prob_pddl)
+
+                # Read trajectory
+                with open(traj_path, "r") as f:
+                    lines = f.readlines()
+
+                # Parse states
+                states = [parse_traj_line_to_state(line, pred_map) for line in lines]
+
+                wl_problems.append(ProblemDataset(wl_prob, states))
+            except Exception:
+                continue
+
+        # Collect
+        if not wl_problems:
+            print("  [Error] No valid training data found.")
+            continue
+
+        full_train_ds = DomainDataset(wl_domain, wl_problems)
+        feature_gen.collect(full_train_ds)
+        print(f"  [WL] Vocabulary Size: {feature_gen.get_n_features()}")
+
+        # 4. Save Feature Generator (JSON)
+        os.makedirs(MODEL_DIR, exist_ok=True)
+        save_path = os.path.join(MODEL_DIR, f"{domain_name}_wl.json")
+        feature_gen.save(save_path)
+        print(f"  [WL] Saved model to {save_path}")
+
+        # 5. Embed All Splits
         for split in SPLITS:
-            split_state_dir = os.path.join(DATA_DIR, "states", domain, split)
-            split_pddl_dir = os.path.join(DATA_DIR, "pddl", domain, split)
-            split_out_dir = os.path.join(OUTPUT_DIR, domain, split)
+            print(f"  [WL] Embedding split: {split}")
+            split_state_dir = os.path.join(DATA_DIR, "states", domain_name, split)
+            split_pddl_dir = os.path.join(DATA_DIR, "pddl", domain_name, split)
+            split_out_dir = os.path.join(OUTPUT_DIR, domain_name, split)
             os.makedirs(split_out_dir, exist_ok=True)
 
             if not os.path.exists(split_state_dir):
                 continue
 
-            for traj_file in os.listdir(split_state_dir):
-                if not traj_file.endswith(".traj"):
+            traj_files = [f for f in os.listdir(split_state_dir) if f.endswith(".traj")]
+
+            for t_file in tqdm(traj_files, desc=f"Embedding {split}"):
+                prob_name = t_file.replace(".traj", "")
+                prob_pddl = os.path.join(split_pddl_dir, f"{prob_name}.pddl")
+                traj_path = os.path.join(split_state_dir, t_file)
+                out_traj_path = os.path.join(split_out_dir, f"{prob_name}.npy")
+                out_goal_path = os.path.join(split_out_dir, f"{prob_name}_goal.npy")
+
+                if not os.path.exists(prob_pddl):
                     continue
 
-                prob_name = traj_file.replace(".traj", "")
-                prob_pddl = os.path.join(split_pddl_dir, f"{prob_name}.pddl")
-                traj_path = os.path.join(split_state_dir, traj_file)
-                out_traj = os.path.join(split_out_dir, f"{prob_name}.npy")
-                out_goal = os.path.join(split_out_dir, f"{prob_name}_goal.npy")
+                try:
+                    # Parse Problem & States
+                    wl_prob = parse_problem(domain_pddl, prob_pddl)
+                    with open(traj_path, "r") as f:
+                        lines = f.readlines()
+                    states = [parse_traj_line_to_state(l, pred_map) for l in lines]
 
-                if os.path.exists(prob_pddl):
-                    tasks.append((traj_path, prob_pddl, out_traj, out_goal))
+                    # Embed Trajectory
+                    # feature_gen.embed returns a flattened list of vectors [v_s0, v_s1, ...]
+                    mini_ds = DomainDataset(
+                        wl_domain, [ProblemDataset(wl_prob, states)]
+                    )
+                    embs = feature_gen.embed(mini_ds)
 
-        # 3. Run Embedding (SEQUENTIAL)
-        print(f"  [Embedding] Processing {len(tasks)} files sequentially...")
+                    # Use 'embs' directly, not 'embs[0]'
+                    traj_matrix = np.array(embs, dtype=np.float32)  # [T, D]
 
-        success_count = 0
-        for task in tqdm(tasks, desc="Embedding"):
-            if process_single_file(task, encoder):
-                success_count += 1
+                    # Embed Goal
+                    # We create a dummy state containing only the goal atoms
+                    goal_atoms = list(wl_prob.positive_goals)
+                    goal_state = State(goal_atoms)
 
-        print(f"  [Embedding] Completed. Success rate: {success_count}/{len(tasks)}")
+                    goal_ds = DomainDataset(
+                        wl_domain, [ProblemDataset(wl_prob, [goal_state])]
+                    )
+                    goal_embs = feature_gen.embed(goal_ds)
 
-        # 4. VERIFICATION CHECK
-        print(f"  [Check] Verifying output dimensions for {domain}...")
-        if len(tasks) > 0:
-            check_file = tasks[0][2]  # The output .npy file
-            if os.path.exists(check_file):
-                data = np.load(check_file)
-                dims = data.shape
-                print(f"    File: {os.path.basename(check_file)}")
-                print(f"    Shape: {dims}")
+                    # Use 'goal_embs[0]' (the first and only vector)
+                    goal_vec = np.array(goal_embs[0], dtype=np.float32)  # [D]
 
-                # Check if the second dimension (features) is > 1
-                if len(dims) > 1 and dims[1] > 1:
-                    print("    STATUS: SUCCESS (Vector embedding generated)")
-                else:
-                    print("    STATUS: FAILURE (Scalar embedding detected)")
-            else:
-                print("    STATUS: FAILURE (Output file not created)")
+                    # Save
+                    np.save(out_traj_path, traj_matrix)
+                    np.save(out_goal_path, goal_vec)
+
+                except Exception as e:
+                    print(f"    Error embedding {prob_name}: {e}")
 
 
 if __name__ == "__main__":

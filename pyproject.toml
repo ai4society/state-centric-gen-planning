@@ -20,7 +20,7 @@ members = [
 ]
 
 [tool.uv.sources]
-wlplan = { path = "packages/wlplan" }
+wlplan = { git = "https://github.com/g-nitin/wlplan.git" }
 
 [dependency-groups]
 dev = [

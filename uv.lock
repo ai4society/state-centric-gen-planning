@@ -691,7 +691,7 @@ requires-dist = [
     { name = "pyperplan", specifier = ">=2.1" },
     { name = "torch", specifier = ">=2.9.1" },
     { name = "tqdm", specifier = ">=4.67.1" },
-    { name = "wlplan", directory = "packages/wlplan" },
+    { name = "wlplan", git = "https://github.com/g-nitin/wlplan.git" },
 ]
 
 [package.metadata.requires-dev]
@@ -816,17 +816,11 @@ wheels = [
 
 [[package]]
 name = "wlplan"
-source = { directory = "packages/wlplan" }
+version = "2.1.0"
+source = { git = "https://github.com/g-nitin/wlplan.git#f5b4ce635e3009e69ca26950cc6e4a649ab3a5b5" }
 dependencies = [
     { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "networkx", version = "3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pddl" },
     { name = "python-sat" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "networkx" },
-    { name = "pddl", specifier = "==0.4.1" },
-    { name = "python-sat", specifier = "==1.8.dev14" },
 ]

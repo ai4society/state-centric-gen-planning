@@ -12,10 +12,39 @@ from wlplan.data import DomainDataset, ProblemDataset
 from wlplan.feature_generator import load_feature_generator
 from wlplan.planning import Atom, State, parse_domain, parse_problem
 
-# def normalize_np(vec):
-#     """L1 Normalization for single vector"""
-#     s = vec.sum()
-#     return vec / s if s > 0 else vec
+
+def embed_state_to_tensor(atoms_set, feature_gen, wl_domain, wl_prob, pred_map, device):
+    """
+    Helper to convert a set of Pyperplan strings -> WLPlan State -> Tensor [1, 1, D]
+    """
+    wl_atoms = []
+    for a_str in atoms_set:
+        # Parse "(on a b)" -> name="on", args=["a", "b"]
+        content = a_str.replace("(", "").replace(")", "")
+        parts = content.split()
+        if not parts:
+            continue
+
+        p_name = parts[0]
+        p_args = parts[1:]
+
+        if p_name in pred_map:
+            wl_atoms.append(Atom(pred_map[p_name], p_args))
+
+    curr_state = State(wl_atoms)
+
+    # Create mini dataset
+    curr_ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [curr_state])])
+
+    # Embed
+    # Use [0] to get the vector
+    curr_embs = feature_gen.embed(curr_ds)
+    curr_vec = np.array(curr_embs[0], dtype=np.float32)
+
+    # Shape: [1, 1, D]
+    curr_tensor = torch.tensor(curr_vec).float().to(device).unsqueeze(0).unsqueeze(0)
+
+    return curr_tensor, curr_vec
 
 
 def solve_problem(
@@ -28,9 +57,10 @@ def solve_problem(
     max_steps,
     wl_domain,
     pred_map,
+    beam_width=3,
 ):
     """
-    Runs the Latent Space Search for a single problem.
+    Runs Latent Space Search using Beam Search.
     """
     # 1. Pyperplan Parsing (for successors)
     parser = Parser(domain_path, prob_path)
@@ -44,118 +74,99 @@ def solve_problem(
     # 3. Embed Goal
     goal_atoms = list(wl_prob.positive_goals)
     goal_state = State(goal_atoms)
-
-    # Create mini dataset for goal
     goal_ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [goal_state])])
-
-    # Use [0] to get the vector, not [0][0]
     goal_embs = feature_gen.embed(goal_ds)
-    goal_vec_raw = np.array(goal_embs[0], dtype=np.float32)
+    goal_vec = np.array(goal_embs[0], dtype=np.float32)
 
-    # NORMALIZE
-    # goal_vec = normalize_np(goal_vec_raw)
-    goal_vec = goal_vec_raw
     goal_tensor = torch.tensor(goal_vec).float().to(device).unsqueeze(0)  # [1, D]
 
-    # 4. Search Loop
-    current_atoms = task.initial_state  # Set of strings: {"(on a b)", ...}
-    plan = []
-    hidden = None
-    solved = False
+    # 4. Initialize Beam
+    # Beam Element: (cumulative_score, hidden_state, last_input_tensor, current_atoms, plan)
+    # Score: Cumulative Euclidean distance (Lower is better)
+
+    initial_atoms = task.initial_state
     goal_set = set(task.goals)
 
-    for step in range(max_steps):
-        # Check Goal
-        if goal_set.issubset(current_atoms):
-            solved = True
-            break
+    # Embed Initial State
+    init_tensor, _ = embed_state_to_tensor(
+        initial_atoms, feature_gen, wl_domain, wl_prob, pred_map, device
+    )
 
-        # Convert Pyperplan State (strings) -> WLPlan State (Atoms)
-        wl_atoms = []
-        for a_str in current_atoms:
-            # Parse "(on a b)" -> name="on", args=["a", "b"]
-            content = a_str.replace("(", "").replace(")", "")
-            parts = content.split()
-            if not parts:
-                continue
+    # (score, hidden, last_tensor, atoms, plan)
+    beam = [(0.0, None, init_tensor, initial_atoms, [])]
 
-            p_name = parts[0]
-            p_args = parts[1:]
-
-            if p_name in pred_map:
-                wl_atoms.append(Atom(pred_map[p_name], p_args))
-
-        curr_state = State(wl_atoms)
-
-        # Embed Current State
-        curr_ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [curr_state])])
-
-        # Use [0] to get the vector
-        curr_embs = feature_gen.embed(curr_ds)
-        curr_vec_raw = np.array(curr_embs[0], dtype=np.float32)
-
-        # Normalize
-        # curr_vec = normalize_np(curr_vec_raw)
-        curr_vec = curr_vec_raw
-        curr_tensor = (
-            torch.tensor(curr_vec).float().to(device).unsqueeze(0).unsqueeze(0)
-        )  # [1, 1, D]
-
-        # Predict Next Latent State
-        with torch.no_grad():
-            pred_next_emb, hidden = model(curr_tensor, goal_tensor, hidden=hidden)
-            target_vec = pred_next_emb.squeeze().cpu().numpy()
-
-        # Generate Successors
+    for _ in range(max_steps):
         candidates = []
-        for op in task.operators:
-            if op.applicable(current_atoms):
-                next_atoms = op.apply(current_atoms)
-                candidates.append((op.name, next_atoms))
 
+        # Expand every node in the current beam
+        for score, hidden, last_tensor, current_atoms, plan in beam:
+            # Check Goal
+            if goal_set.issubset(current_atoms):
+                return {
+                    "problem": prob_file,
+                    "solved": True,
+                    "plan_len": len(plan),
+                    "plan": plan,
+                }
+
+            # A. Predict Next Latent State
+            # Input: last_tensor [1, 1, D], goal_tensor [1, D]
+            # Output: pred_next_emb [1, 1, D], next_hidden (tuple)
+            with torch.no_grad():
+                pred_next_emb, next_hidden = model(
+                    last_tensor, goal_tensor, hidden=hidden
+                )
+                target_vec = pred_next_emb.squeeze().cpu().numpy()
+
+            # B. Generate Successors
+            successors = []
+            for op in task.operators:
+                if op.applicable(current_atoms):
+                    next_atoms = op.apply(current_atoms)
+                    successors.append((op.name, next_atoms))
+
+            if not successors:
+                continue  # Dead end for this path
+
+            # C. Score Successors
+            for op_name, next_atoms in successors:
+                # Embed Candidate
+                cand_tensor, cand_vec = embed_state_to_tensor(
+                    next_atoms, feature_gen, wl_domain, wl_prob, pred_map, device
+                )
+
+                # Calculate Distance (Prediction Error)
+                dist = np.linalg.norm(cand_vec - target_vec)
+
+                # New Score = Previous Score + Current Error
+                new_score = score + dist
+
+                # Add to candidates list
+                candidates.append(
+                    (new_score, next_hidden, cand_tensor, next_atoms, plan + [op_name])
+                )
+
+        # D. Prune Beam
         if not candidates:
-            break
+            break  # All paths led to dead ends
 
-        # Score Candidates
-        best_action = None
-        best_dist = float("inf")
-        best_next_atoms = None
+        # Sort by score (ascending) and take top K
+        # Note: We rely on Python's stable sort.
+        # Tensors/Sets are not comparable, so we might need a wrapper if scores are identical.
+        # But floats rarely collide exactly.
+        candidates.sort(key=lambda x: x[0])
+        beam = candidates[:beam_width]
 
-        for op_name, next_atoms in candidates:
-            # Convert Candidate -> WL State
-            cand_wl_atoms = []
-            for a_str in next_atoms:
-                content = a_str.replace("(", "").replace(")", "")
-                parts = content.split()
-                if parts and parts[0] in pred_map:
-                    cand_wl_atoms.append(Atom(pred_map[parts[0]], parts[1:]))
+    # If we exit loop, we failed to find goal within max_steps
+    # Return the best path found so far (lowest error)
+    best_attempt = beam[0] if beam else (0, None, None, None, [])
 
-            cand_state = State(cand_wl_atoms)
-            cand_ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [cand_state])])
-
-            # Use [0] to get the vector
-            cand_embs = feature_gen.embed(cand_ds)
-            cand_vec_raw = np.array(cand_embs[0], dtype=np.float32)
-
-            # NORMALIZE
-            # cand_vec = normalize_np(cand_vec_raw)
-            cand_vec = cand_vec_raw
-
-            # Distance
-            dist = np.linalg.norm(cand_vec - target_vec)
-
-            if dist < best_dist:
-                best_dist = dist
-                best_action = op_name
-                best_next_atoms = next_atoms
-
-        if best_action:
-            plan.append(best_action)
-            current_atoms = best_next_atoms
-        else:
-            break
-
-    return {"problem": prob_file, "solved": solved, "plan_len": len(plan), "plan": plan}
+    return {
+        "problem": prob_file,
+        "solved": False,
+        "plan_len": max_steps,
+        "plan": best_attempt[4],
+    }
 
 
 def run_inference(args):
@@ -213,6 +224,7 @@ def run_inference(args):
                     max_steps=args.max_steps,
                     wl_domain=wl_domain,
                     pred_map=pred_map,
+                    beam_width=args.beam_width,
                 )
                 results.append(res)
                 if res["solved"]:
@@ -245,6 +257,9 @@ if __name__ == "__main__":
     parser.add_argument("--results_dir", default="results")
     parser.add_argument("--hidden_dim", type=int, default=256)
     parser.add_argument("--max_steps", type=int, default=100)
+    parser.add_argument(
+        "--beam_width", type=int, default=5, help="Beam width for search"
+    )
     args = parser.parse_args()
 
     run_inference(args)

@@ -5,10 +5,12 @@ description = "State-Centric Learning for Plan Generation"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "matplotlib>=3.10.7",
     "numpy>=2.2.6",
     "pddl>=0.4.1",
     "pddlpy>=0.4.4",
     "pyperplan>=2.1",
+    "scikit-learn>=1.7.2",
     "torch>=2.9.1",
     "tqdm>=4.67.1",
     "wlplan",

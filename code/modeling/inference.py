@@ -15,8 +15,9 @@ from wlplan.planning import Atom, State, parse_domain, parse_problem
 
 def embed_state_to_tensor(atoms_set, feature_gen, wl_domain, wl_prob, pred_map, device):
     """
-    Helper to convert a set of Pyperplan strings -> WLPlan State -> Tensor [1, 1, D]
+    Helper to convert a set of atoms (strings) into a Tensor [1, 1, D] and Numpy Array [D].
     """
+    # 1. Convert Strings to WL Atoms
     wl_atoms = []
     for a_str in atoms_set:
         # Parse "(on a b)" -> name="on", args=["a", "b"]
@@ -31,20 +32,23 @@ def embed_state_to_tensor(atoms_set, feature_gen, wl_domain, wl_prob, pred_map, 
         if p_name in pred_map:
             wl_atoms.append(Atom(pred_map[p_name], p_args))
 
-    curr_state = State(wl_atoms)
+    # 2. Create State & Dataset
+    state = State(wl_atoms)
 
     # Create mini dataset
-    curr_ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [curr_state])])
+    ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [curr_state])])
 
-    # Embed
-    # Use [0] to get the vector
-    curr_embs = feature_gen.embed(curr_ds)
-    curr_vec = np.array(curr_embs[0], dtype=np.float32)
+    # 3. Embed
+    # Returns list of vectors. We take the first one.
+    embs = feature_gen.embed(ds)
+    vec_raw = np.array(embs[0], dtype=np.float32)
 
-    # Shape: [1, 1, D]
-    curr_tensor = torch.tensor(curr_vec).float().to(device).unsqueeze(0).unsqueeze(0)
+    # 4. To Tensor (No Normalization!)
+    tensor = (
+        torch.tensor(vec_raw).float().to(device).unsqueeze(0).unsqueeze(0)
+    )  # [1, 1, D]
 
-    return curr_tensor, curr_vec
+    return tensor, vec_raw
 
 
 def solve_problem(
@@ -113,9 +117,10 @@ def solve_problem(
             # Input: last_tensor [1, 1, D], goal_tensor [1, D]
             # Output: pred_next_emb [1, 1, D], next_hidden (tuple)
             with torch.no_grad():
-                pred_next_emb, next_hidden = model(
-                    last_tensor, goal_tensor, hidden=hidden
-                )
+                pred_delta, next_hidden = model(last_tensor, goal_tensor, hidden=hidden)
+                # Reconstruct Next State: S_{t+1} = S_t + Delta
+                # last_emb is [1, 1, D], pred_delta is [1, 1, D]
+                pred_next_emb = last_tensor + pred_delta
                 target_vec = pred_next_emb.squeeze().cpu().numpy()
 
             # B. Generate Successors

@@ -34,8 +34,11 @@ def evaluate(model, val_loader, criterion, device):
 
             # Input: S_0 ... S_{T-1}
             input_states = states[:, :-1, :]
-            # Target: S_1 ... S_T
+
+            # Target: DELTA (S_{t+1} - S_t)
             target_states = states[:, 1:, :]
+            target_deltas = target_states - input_states
+
             input_lengths = lengths - 1
 
             preds, _ = model(input_states, goals, input_lengths)
@@ -47,7 +50,9 @@ def evaluate(model, val_loader, criterion, device):
             )
             mask = mask.unsqueeze(-1).expand_as(preds)
 
-            loss = criterion(preds * mask, target_states * mask)
+            # Compare Preds vs Deltas
+            loss = criterion(preds * mask, target_deltas * mask)
+
             total_loss += loss.item()
             count += 1
 
@@ -150,9 +155,13 @@ def train(args):
             # But simpler: just slice everything and mask loss later
 
             # Input sequence: remove last step
+            # Input: S_0 ... S_{T-1}
             input_states = states[:, :-1, :]
-            # Target sequence: remove first step
+
+            # Target: The CHANGE (Delta)
+            # Delta = S_{t+1} - S_t
             target_states = states[:, 1:, :]
+            target_deltas = target_states - input_states
 
             # Adjust lengths for the sliced sequence
             input_lengths = lengths - 1
@@ -168,7 +177,8 @@ def train(args):
             )
             mask = mask.unsqueeze(-1).expand_as(preds)
 
-            loss = criterion(preds * mask, target_states * mask)
+            # Loss is against the DELTA
+            loss = criterion(preds * mask, target_deltas * mask)
 
             optimizer.zero_grad()
             loss.backward()

@@ -23,7 +23,7 @@ module use "$HOME/privatemodules"
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 
 uv run python -m code.encoding-generation.generate_graph_embeddings --domain "blocks"
-uv run python -m code.modeling.train --domain "blocks" --epochs 250
+uv run python -m code.modeling.train --domain "blocks" --epochs 125
 uv run python -m code.modeling.inference --domain "blocks" --checkpoint "checkpoints/blocks_lstm_best.pt"
 
 echo "Job finished at $(date)"

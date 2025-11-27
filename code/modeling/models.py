@@ -1,24 +1,24 @@
 import torch
 import torch.nn as nn
-
+import torch.nn.functional as F
 
 class StateCentricLSTM(nn.Module):
-    def __init__(self, input_dim, hidden_dim=256, num_layers=2):
+    def __init__(self, input_dim, hidden_dim=256, num_layers=2, embed_dim=64):
         super().__init__()
 
-        # Input: State Embedding (D) + Goal Embedding (D)
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
+        # 1. Add a Projection Layer (Dimensionality Reduction)
+        self.encoder = nn.Linear(input_dim, embed_dim)
 
-        # We concatenate State + Goal at every step
+        # LSTM now takes the smaller embed_dim
+        # Input: State (embed_dim) + Goal (embed_dim)
         self.lstm = nn.LSTM(
-            input_size=input_dim * 2,
+            input_size=embed_dim * 2,
             hidden_size=hidden_dim,
             num_layers=num_layers,
             batch_first=True,
         )
 
-        # Project back to State Embedding dimension
+        # Head projects back to FULL input_dim (to match WL targets)
         self.head = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
@@ -27,17 +27,25 @@ class StateCentricLSTM(nn.Module):
 
     def forward(self, state_seq, goal_seq, lengths=None, hidden=None):
         """
-        state_seq: [B, T, D]
+        state_seq: [B, T, Input_D]
         goal_seq: [B, D] (will be expanded to [B, T, D])
         """
-        B, T, D = state_seq.shape
+
+        # 1. Project High-Dim Sparse -> Low-Dim Dense
+        state_emb = torch.relu(self.encoder(state_seq))  # [B, T, embed_dim]
+
+        # Project Goal too (using same encoder to align spaces)
+        goal_emb = torch.relu(self.encoder(goal_seq))  # [B, embed_dim]
+
+        _, T, _ = state_emb.shape
 
         # Expand goal to match sequence length
-        goal_expanded = goal_seq.unsqueeze(1).expand(-1, T, -1)
+        goal_expanded = goal_emb.unsqueeze(1).expand(-1, T, -1)
 
         # Concatenate: [B, T, 2D]
-        lstm_input = torch.cat([state_seq, goal_expanded], dim=2)
+        lstm_input = torch.cat([state_emb, goal_expanded], dim=2)
 
+        # Pack sequences if lengths are provided
         if lengths is not None:
             lstm_input = torch.nn.utils.rnn.pack_padded_sequence(
                 lstm_input, lengths.cpu(), batch_first=True, enforce_sorted=False

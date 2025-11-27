@@ -36,7 +36,7 @@ def embed_state_to_tensor(atoms_set, feature_gen, wl_domain, wl_prob, pred_map, 
     state = State(wl_atoms)
 
     # Create mini dataset
-    ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [curr_state])])
+    ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [state])])
 
     # 3. Embed
     # Returns list of vectors. We take the first one.
@@ -64,7 +64,7 @@ def solve_problem(
     beam_width=3,
 ):
     """
-    Runs Latent Space Search using Beam Search.
+    Runs Latent Space Search using Beam Search with loop detection.
     """
     # 1. Pyperplan Parsing (for successors)
     parser = Parser(domain_path, prob_path)
@@ -96,14 +96,14 @@ def solve_problem(
         initial_atoms, feature_gen, wl_domain, wl_prob, pred_map, device
     )
 
-    # (score, hidden, last_tensor, atoms, plan)
-    beam = [(0.0, None, init_tensor, initial_atoms, [])]
+    # (score, hidden, last_tensor, atoms, plan, visited_hashes)
+    initial_hash = frozenset(initial_atoms)
+    beam = [(0.0, None, init_tensor, initial_atoms, [], {initial_hash})]
 
-    for _ in range(max_steps):
+    for step in range(max_steps):
         candidates = []
 
-        # Expand every node in the current beam
-        for score, hidden, last_tensor, current_atoms, plan in beam:
+        for score, hidden, last_tensor, current_atoms, plan, visited in beam:
             # Check Goal
             if goal_set.issubset(current_atoms):
                 return {
@@ -123,33 +123,28 @@ def solve_problem(
                 pred_next_emb = last_tensor + pred_delta
                 target_vec = pred_next_emb.squeeze().cpu().numpy()
 
-            # B. Generate Successors
-            successors = []
+            # Generate & Score Successors
             for op in task.operators:
                 if op.applicable(current_atoms):
                     next_atoms = op.apply(current_atoms)
-                    successors.append((op.name, next_atoms))
+                    state_hash = frozenset(next_atoms)
+                    
+                    # SKIP IF ALREADY VISITED ON THIS PATH
+                    if state_hash in visited:
+                        continue
 
-            if not successors:
-                continue  # Dead end for this path
+                    cand_tensor, cand_vec = embed_state_to_tensor(
+                        next_atoms, feature_gen, wl_domain, wl_prob, pred_map, device
+                    )
 
-            # C. Score Successors
-            for op_name, next_atoms in successors:
-                # Embed Candidate
-                cand_tensor, cand_vec = embed_state_to_tensor(
-                    next_atoms, feature_gen, wl_domain, wl_prob, pred_map, device
-                )
+                    dist = np.linalg.norm(cand_vec - target_vec)
+                    new_score = score + dist
+                    new_visited = visited | {state_hash}
 
-                # Calculate Distance (Prediction Error)
-                dist = np.linalg.norm(cand_vec - target_vec)
-
-                # New Score = Previous Score + Current Error
-                new_score = score + dist
-
-                # Add to candidates list
-                candidates.append(
-                    (new_score, next_hidden, cand_tensor, next_atoms, plan + [op_name])
-                )
+                    candidates.append(
+                        (new_score, next_hidden, cand_tensor, next_atoms, 
+                         plan + [op.name], new_visited)
+                    )
 
         # D. Prune Beam
         if not candidates:
@@ -164,12 +159,12 @@ def solve_problem(
 
     # If we exit loop, we failed to find goal within max_steps
     # Return the best path found so far (lowest error)
-    best_attempt = beam[0] if beam else (0, None, None, None, [])
+    best_attempt = beam[0] if beam else (0, None, None, None, [], set())
 
     return {
         "problem": prob_file,
         "solved": False,
-        "plan_len": max_steps,
+        "plan_len": len(best_attempt[4]),
         "plan": best_attempt[4],
     }
 
@@ -263,7 +258,7 @@ if __name__ == "__main__":
     parser.add_argument("--hidden_dim", type=int, default=256)
     parser.add_argument("--max_steps", type=int, default=100)
     parser.add_argument(
-        "--beam_width", type=int, default=5, help="Beam width for search"
+        "--beam_width", type=int, default=2, help="Search beam width"
     )
     args = parser.parse_args()
 

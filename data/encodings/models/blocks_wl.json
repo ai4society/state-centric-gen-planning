@@ -915,7 +915,7 @@
         ]
     },
     "feature_name": "wl",
-    "graph_representation": "ilg",
+    "graph_representation": "nilg",
     "iterations": 2,
     "multiset_hash": true,
     "package_version": "2.1.0",

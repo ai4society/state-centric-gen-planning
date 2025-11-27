@@ -26,13 +26,16 @@ export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 DOMAINS=("blocks" "gripper" "logistics" "visitall-from-everywhere")
 
 # Hyperparameters
-EPOCHS=50
+EPOCHS=125
 BATCH_SIZE=32
 HIDDEN_DIM=256
 LR=0.01
 
 for DOMAIN in "${DOMAINS[@]}"; do
     echo "*** PROCESSING DOMAIN: $DOMAIN ***"
+
+    echo "[0/2] Starting Encoding..."
+    uv run python -m code.encoding-generation.generate_graph_embeddings --domain "$DOMAIN"
 
     # 2. Training
     echo "[1/2] Starting Training..."
@@ -61,10 +64,10 @@ for DOMAIN in "${DOMAINS[@]}"; do
         --checkpoint "$CHECKPOINT" \
         --pddl_dir "data/pddl" \
         --data_dir "data" \
-        --iterations 2 \
         --results_dir "results" \
         --hidden_dim $HIDDEN_DIM \
-        --max_steps 100
+        --max_steps 100 \
+        --beam_width 3
 
     echo "Finished processing $DOMAIN"
     echo ""

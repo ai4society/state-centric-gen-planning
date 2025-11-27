@@ -1,17 +1,17 @@
 import argparse
 import os
 from code.modeling.dataset import PlanningTrajectoryDataset, collate_trajectories
-from code.modeling.models import StateCentricLSTM
+from code.modeling.models import StateCentricLSTM_1, StateCentricLSTM_2  # noqa: F401
 
 import torch
-import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 
-def evaluate(model, val_loader, criterion, device):
-    """Computes loss on the validation set."""
+def evaluate(model, val_loader, device):
+    """Computes Cosine loss on the validation set."""
     model.eval()
     total_loss = 0
     count = 0
@@ -19,7 +19,6 @@ def evaluate(model, val_loader, criterion, device):
     with torch.no_grad():
         for states, goals, lengths in val_loader:
             # Need at least 2 states to predict next state
-            # Filter out trajectories with T=1 (input_lengths=0)
             valid_mask = lengths > 1
             if not valid_mask.any():
                 continue
@@ -35,23 +34,28 @@ def evaluate(model, val_loader, criterion, device):
             # Input: S_0 ... S_{T-1}
             input_states = states[:, :-1, :]
 
-            # Target: DELTA (S_{t+1} - S_t)
+            # Target: S_1 ... S_T
             target_states = states[:, 1:, :]
-            target_deltas = target_states - input_states
 
             input_lengths = lengths - 1
 
             preds, _ = model(input_states, goals, input_lengths)
 
-            # Masking
+            # Create Boolean Mask [B, T-1]
             mask = (
                 torch.arange(input_states.size(1), device=device)[None, :]
                 < input_lengths[:, None]
             )
-            mask = mask.unsqueeze(-1).expand_as(preds)
 
-            # Compare Preds vs Deltas
-            loss = criterion(preds * mask, target_deltas * mask)
+            # Flatten using the mask to get only valid steps
+            # This avoids issues with CosineSimilarity on zero-padded vectors
+            active_preds = preds[mask]
+            active_targets = target_states[mask]
+
+            # Cosine Loss: 1 - CosineSimilarity
+            loss = (
+                1.0 - F.cosine_similarity(active_preds, active_targets, dim=-1).mean()
+            )
 
             total_loss += loss.item()
             count += 1
@@ -113,9 +117,9 @@ def train(args):
     print(f"Feature Dimension: {input_dim}")
 
     # 2. Model
-    model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
+    # model = StateCentricLSTM_1(input_dim, hidden_dim=args.hidden_dim).to(device)
+    model = StateCentricLSTM_2(input_dim, hidden_dim=args.hidden_dim).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    criterion = nn.MSELoss()
 
     # Logging
     log_file = os.path.join(args.save_dir, f"{args.domain}_training_log.csv")
@@ -157,11 +161,7 @@ def train(args):
             # Input sequence: remove last step
             # Input: S_0 ... S_{T-1}
             input_states = states[:, :-1, :]
-
-            # Target: The CHANGE (Delta)
-            # Delta = S_{t+1} - S_t
             target_states = states[:, 1:, :]
-            target_deltas = target_states - input_states
 
             # Adjust lengths for the sliced sequence
             input_lengths = lengths - 1
@@ -175,10 +175,21 @@ def train(args):
                 torch.arange(input_states.size(1), device=device)[None, :]
                 < input_lengths[:, None]
             )
-            mask = mask.unsqueeze(-1).expand_as(preds)
 
-            # Loss is against the DELTA
-            loss = criterion(preds * mask, target_deltas * mask)
+            # Flatten for loss calculation
+            # preds: [B, T, D] -> [N, D]
+            # targets: [B, T, D] -> [N, D]
+            active_preds = preds[mask]
+
+            # We predict the State directly
+            active_targets = target_states[mask]
+
+            # Cosine Embedding Loss
+            # We want preds and targets to point in the same direction (target=1)
+            # Loss = 1 - cos_sim(x, y)
+            loss = (
+                1.0 - F.cosine_similarity(active_preds, active_targets, dim=-1).mean()
+            )
 
             optimizer.zero_grad()
             loss.backward()
@@ -191,7 +202,7 @@ def train(args):
         avg_train_loss = train_loss / count if count > 0 else 0
 
         # Validation Loop
-        avg_val_loss = evaluate(model, val_loader, criterion, device)
+        avg_val_loss = evaluate(model, val_loader, device)
 
         print(
             f"Epoch {epoch + 1}: Train Loss {avg_train_loss:.6f} | Val Loss {avg_val_loss:.6f}"

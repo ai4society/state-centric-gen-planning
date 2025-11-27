@@ -1,10 +1,11 @@
 import argparse
 import json
 import os
-from code.modeling.models import StateCentricLSTM
+from code.modeling.models import StateCentricLSTM_1, StateCentricLSTM_2  # noqa: F401
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from pyperplan.grounding import ground
 from pyperplan.pddl.parser import Parser
 from tqdm import tqdm
@@ -96,13 +97,15 @@ def solve_problem(
         initial_atoms, feature_gen, wl_domain, wl_prob, pred_map, device
     )
 
-    # (score, hidden, last_tensor, atoms, plan, visited_hashes)
+    # Beam Element: (score, hidden, last_tensor, atoms, plan, visited_hashes)
     initial_hash = frozenset(initial_atoms)
+    # Tuple size: 6
     beam = [(0.0, None, init_tensor, initial_atoms, [], {initial_hash})]
 
     for step in range(max_steps):
         candidates = []
 
+        # Unpack 6 items
         for score, hidden, last_tensor, current_atoms, plan, visited in beam:
             # Check Goal
             if goal_set.issubset(current_atoms):
@@ -117,45 +120,73 @@ def solve_problem(
             # Input: last_tensor [1, 1, D], goal_tensor [1, D]
             # Output: pred_next_emb [1, 1, D], next_hidden (tuple)
             with torch.no_grad():
-                pred_delta, next_hidden = model(last_tensor, goal_tensor, hidden=hidden)
-                # Reconstruct Next State: S_{t+1} = S_t + Delta
-                # last_emb is [1, 1, D], pred_delta is [1, 1, D]
-                pred_next_emb = last_tensor + pred_delta
-                target_vec = pred_next_emb.squeeze().cpu().numpy()
+                # The model now predicts the State directly
+                pred_next_emb, next_hidden = model(
+                    last_tensor, goal_tensor, hidden=hidden
+                )
 
-            # Generate & Score Successors
+                # We keep it as a tensor for cosine calculation
+                # pred_next_emb shape: [1, 1, D]
+
+            # B. Generate Successors
+            successors = []
             for op in task.operators:
                 if op.applicable(current_atoms):
                     next_atoms = op.apply(current_atoms)
-                    state_hash = frozenset(next_atoms)
-                    
-                    # SKIP IF ALREADY VISITED ON THIS PATH
-                    if state_hash in visited:
-                        continue
+                    successors.append((op.name, next_atoms))
 
-                    cand_tensor, cand_vec = embed_state_to_tensor(
-                        next_atoms, feature_gen, wl_domain, wl_prob, pred_map, device
+            if not successors:
+                continue
+
+            # C. Score Successors
+            for op_name, next_atoms in successors:
+                # 1. Cycle Detection
+                next_hash = frozenset(next_atoms)
+                if next_hash in visited:
+                    continue  # Skip cycles
+
+                # 2. Embed Candidate
+                cand_tensor, _ = embed_state_to_tensor(
+                    next_atoms, feature_gen, wl_domain, wl_prob, pred_map, device
+                )
+
+                # Calculate Cosine Similarity (Higher is better)
+                # We use negative cosine as the "score" because the beam sorts ascending (lower is better)
+                similarity = F.cosine_similarity(
+                    pred_next_emb, cand_tensor, dim=-1
+                ).item()
+
+                # Score = Cumulative Score - Similarity
+                # (We subtract because we want to MAXIMIZE similarity, but beam search minimizes score)
+                # Note: You might want to weigh this. e.g., new_score = score - (similarity * 10)
+                new_score = score - similarity
+
+                # 5. Update Visited
+                new_visited = visited.copy()
+                new_visited.add(next_hash)
+
+                # Append tuple of size 6
+                candidates.append(
+                    (
+                        new_score,
+                        next_hidden,
+                        cand_tensor,
+                        next_atoms,
+                        plan + [op_name],
+                        new_visited,
                     )
+                )
 
-                    dist = np.linalg.norm(cand_vec - target_vec)
-                    new_score = score + dist
-                    new_visited = visited | {state_hash}
+            # D. Prune Beam
+            if not candidates:
+                break  # All paths led to dead ends
 
-                    candidates.append(
-                        (new_score, next_hidden, cand_tensor, next_atoms, 
-                         plan + [op.name], new_visited)
-                    )
-
-        # D. Prune Beam
-        if not candidates:
-            break  # All paths led to dead ends
-
-        # Sort by score (ascending) and take top K
-        # Note: We rely on Python's stable sort.
-        # Tensors/Sets are not comparable, so we might need a wrapper if scores are identical.
-        # But floats rarely collide exactly.
-        candidates.sort(key=lambda x: x[0])
-        beam = candidates[:beam_width]
+            # Sort by score (ascending) and take top K
+            # Note: We rely on Python's stable sort.
+            # Tensors/Sets are not comparable, so we might need a wrapper if scores are identical.
+            # But floats rarely collide exactly.
+            candidates.sort(key=lambda x: x[0])
+            beam = candidates[:beam_width]
 
     # If we exit loop, we failed to find goal within max_steps
     # Return the best path found so far (lowest error)
@@ -193,7 +224,7 @@ def run_inference(args):
 
     # 3. Load LSTM
     print(f"Loading LSTM from {args.checkpoint}...")
-    model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
+    model = StateCentricLSTM_2(input_dim, hidden_dim=args.hidden_dim).to(device)
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
 
@@ -257,9 +288,7 @@ if __name__ == "__main__":
     parser.add_argument("--results_dir", default="results")
     parser.add_argument("--hidden_dim", type=int, default=256)
     parser.add_argument("--max_steps", type=int, default=100)
-    parser.add_argument(
-        "--beam_width", type=int, default=2, help="Search beam width"
-    )
+    parser.add_argument("--beam_width", type=int, default=2, help="Search beam width")
     args = parser.parse_args()
 
     run_inference(args)

@@ -2,6 +2,63 @@ import torch
 import torch.nn as nn
 
 
+class StateCentricLSTM_Delta(nn.Module):
+    def __init__(self, input_dim, hidden_dim=256, num_layers=2, embed_dim=32):
+        super().__init__()
+
+        # Projection: High-Dim Sparse -> Low-Dim Dense
+        self.encoder = nn.Linear(input_dim, embed_dim)
+
+        # LSTM
+        self.lstm = nn.LSTM(
+            input_size=embed_dim * 2,
+            hidden_size=hidden_dim,
+            num_layers=num_layers,
+            batch_first=True,
+        )
+
+        # Head: Projects back to Input Dim (Delta)
+        # No LayerNorm, No ReLU at the end
+        # We need to predict negative values (subtractions)
+        self.head = nn.Linear(hidden_dim, input_dim)
+
+    def forward(self, state_seq, goal_seq, lengths=None, hidden=None):
+        """
+        Returns:
+            pred_delta: [B, T, Input_D] (The predicted CHANGE)
+            hidden: LSTM hidden state
+        """
+        # 1. Encode
+        state_emb = torch.relu(self.encoder(state_seq))
+        goal_emb = torch.relu(self.encoder(goal_seq))
+
+        _, T, _ = state_emb.shape
+
+        # 2. Expand Goal
+        goal_expanded = goal_emb.unsqueeze(1).expand(-1, T, -1)
+
+        # 3. Concat
+        lstm_input = torch.cat([state_emb, goal_expanded], dim=2)
+
+        # 4. Pack
+        if lengths is not None:
+            lstm_input = torch.nn.utils.rnn.pack_padded_sequence(
+                lstm_input, lengths.cpu(), batch_first=True, enforce_sorted=False
+            )
+
+        # 5. LSTM
+        out, hidden = self.lstm(lstm_input, hidden)
+
+        # 6. Unpack
+        if lengths is not None:
+            out, _ = torch.nn.utils.rnn.pad_packed_sequence(out, batch_first=True)
+
+        # 7. Predict Delta
+        pred_delta = self.head(out)
+
+        return pred_delta, hidden
+
+
 class StateCentricLSTM(nn.Module):
     def __init__(self, input_dim, hidden_dim=256, num_layers=2, embed_dim=32):
         super().__init__()

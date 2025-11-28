@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 from code.common.utils import set_seed
-from code.modeling.models import StateCentricLSTM
+from code.modeling.models import StateCentricLSTM, StateCentricLSTM_Delta
 
 import numpy as np
 import torch
@@ -13,6 +13,8 @@ from tqdm import tqdm
 from wlplan.data import DomainDataset, ProblemDataset
 from wlplan.feature_generator import load_feature_generator
 from wlplan.planning import Atom, State, parse_domain, parse_problem
+
+delta = True
 
 
 def embed_state_to_tensor(atoms_set, feature_gen, wl_domain, wl_prob, pred_map, device):
@@ -64,10 +66,15 @@ def solve_problem(
     wl_domain,
     pred_map,
     beam_width=3,
+    delta=False,
 ):
     """
     Runs Latent Space Search using Beam Search with loop detection.
     """
+    print(
+        f"Inference using {'Delta Prediction' if delta else 'State Prediction'} for {prob_file}"
+    )
+
     # 1. Pyperplan Parsing (for successors)
     parser = Parser(domain_path, prob_path)
     dom = parser.parse_domain()
@@ -87,8 +94,8 @@ def solve_problem(
     goal_tensor = torch.tensor(goal_vec).float().to(device).unsqueeze(0)  # [1, D]
 
     # 4. Initialize Beam
-    # Beam Element: (cumulative_score, hidden_state, last_input_tensor, current_atoms, plan)
-    # Score: Cumulative Euclidean distance (Lower is better)
+    # Beam Element: (cumulative_score, hidden, last_tensor, current_atoms, plan, visited)
+    # Score: Cumulative Euclidean Distance (Lower is better)
 
     initial_atoms = task.initial_state
     goal_set = set(task.goals)
@@ -103,7 +110,7 @@ def solve_problem(
     # Tuple size: 6
     beam = [(0.0, None, init_tensor, initial_atoms, [], {initial_hash})]
 
-    for step in range(max_steps):
+    for _ in range(max_steps):
         candidates = []
 
         # Unpack 6 items
@@ -117,17 +124,16 @@ def solve_problem(
                     "plan": plan,
                 }
 
-            # A. Predict Next Latent State
+            # A. Predict Next Latent State/Delta
             # Input: last_tensor [1, 1, D], goal_tensor [1, D]
             # Output: pred_next_emb [1, 1, D], next_hidden (tuple)
             with torch.no_grad():
                 # The model now predicts the State directly
-                pred_next_emb, next_hidden = model(
-                    last_tensor, goal_tensor, hidden=hidden
-                )
+                pred, next_hidden = model(last_tensor, goal_tensor, hidden=hidden)
 
-                # We keep it as a tensor for cosine calculation
-                # pred_next_emb shape: [1, 1, D]
+                if delta:
+                    # Reconstruct Next State: S_t + Delta
+                    pred_next_emb = last_tensor + pred
 
             # B. Generate Successors
             successors = []
@@ -138,6 +144,9 @@ def solve_problem(
 
             if not successors:
                 continue
+
+            # debugging
+            print(f"\nStep {len(plan)} | Current Best Score: {score:.4f}")
 
             # C. Score Successors
             for op_name, next_atoms in successors:
@@ -151,16 +160,25 @@ def solve_problem(
                     next_atoms, feature_gen, wl_domain, wl_prob, pred_map, device
                 )
 
-                # Calculate Cosine Similarity (Higher is better)
-                # We use negative cosine as the "score" because the beam sorts ascending (lower is better)
-                similarity = F.cosine_similarity(
-                    pred_next_emb, cand_tensor, dim=-1
-                ).item()
+                if not delta:
+                    # Calculate Cosine Similarity (Higher is better)
+                    # We use negative cosine as the "score" because the beam sorts ascending (lower is better)
+                    sim = F.cosine_similarity(pred_next_emb, cand_tensor, dim=-1).item()
+                else:
+                    # METRIC: Euclidean Distance (L2)
+                    # We want the candidate that is closest to our prediction
+                    # Distance = ||Pred - Cand||
+                    sim = torch.norm(pred_next_emb - cand_tensor, p=2).item()
 
-                # Score = Cumulative Score - Similarity
-                # (We subtract because we want to MAXIMIZE similarity, but beam search minimizes score)
-                # Note: You might want to weigh this. e.g., new_score = score - (similarity * 10)
-                new_score = score - similarity
+                # Print the op name and the similarity score
+                # If these are all 0.99+, the model is predicting Identity.
+                # If the 'correct' action is lower than others, the physics are wrong.
+                print(f"  Op: {op_name:<30} | Sim: {sim:.5f}")
+
+                # Update Score
+                # Beam search usually minimizes cost.
+                # Here, 'score' is cumulative error.
+                new_score = score + sim
 
                 # 5. Update Visited
                 new_visited = visited.copy()
@@ -227,7 +245,11 @@ def run_inference(args):
 
     # 3. Load LSTM
     print(f"Loading LSTM from {args.checkpoint}...")
-    model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
+    if delta:
+        model = StateCentricLSTM_Delta(input_dim, hidden_dim=args.hidden_dim).to(device)
+    else:
+        model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
+
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
 
@@ -260,6 +282,7 @@ def run_inference(args):
                     wl_domain=wl_domain,
                     pred_map=pred_map,
                     beam_width=args.beam_width,
+                    delta=delta,
                 )
                 results.append(res)
                 if res["solved"]:

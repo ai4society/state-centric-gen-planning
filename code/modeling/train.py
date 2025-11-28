@@ -2,20 +2,29 @@ import argparse
 import os
 from code.common.utils import set_seed, worker_init_fn
 from code.modeling.dataset import PlanningTrajectoryDataset, collate_trajectories
-from code.modeling.models import StateCentricLSTM
+from code.modeling.models import StateCentricLSTM, StateCentricLSTM_Delta
 
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+from torch.nn import MSELoss
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+delta = True
 
-def evaluate(model, val_loader, device):
-    """Computes Cosine loss on the validation set."""
+
+def evaluate(model, val_loader, device, delta=False):
+    """
+    Computes Cosine loss on the validation set.
+    The `delta` param
+    """
     model.eval()
     total_loss = 0
     count = 0
+    print(f"Evaluation using {'Delta MSE Loss' if delta else 'Cosine Loss'}")
+    if delta:
+        criterion = MSELoss(reduction="none")  # We will mask it manually
 
     with torch.no_grad():
         for states, goals, lengths in val_loader:
@@ -24,19 +33,19 @@ def evaluate(model, val_loader, device):
             if not valid_mask.any():
                 continue
 
-            states = states[valid_mask]
-            goals = goals[valid_mask]
-            lengths = lengths[valid_mask]
-
-            states = states.to(device)
-            goals = goals.to(device)
-            lengths = lengths.to(device)
+            states = states[valid_mask].to(device)
+            goals = goals[valid_mask].to(device)
+            lengths = lengths[valid_mask].to(device)
 
             # Input: S_0 ... S_{T-1}
             input_states = states[:, :-1, :]
 
-            # Target: S_1 ... S_T
+            # Target State: S_1 ... S_T
             target_states = states[:, 1:, :]
+
+            if delta:
+                # Target Delta: (S_{t+1} - S_t)
+                target_deltas = target_states - input_states
 
             input_lengths = lengths - 1
 
@@ -51,12 +60,20 @@ def evaluate(model, val_loader, device):
             # Flatten using the mask to get only valid steps
             # This avoids issues with CosineSimilarity on zero-padded vectors
             active_preds = preds[mask]
-            active_targets = target_states[mask]
 
-            # Cosine Loss: 1 - CosineSimilarity
-            loss = (
-                1.0 - F.cosine_similarity(active_preds, active_targets, dim=-1).mean()
-            )
+            if not delta:
+                active_targets = target_states[mask]
+
+                # Cosine Loss: 1 - CosineSimilarity
+                loss = (
+                    1.0
+                    - F.cosine_similarity(active_preds, active_targets, dim=-1).mean()
+                )
+            else:
+                active_targets = target_deltas[mask]
+
+                # MSE Loss on Deltas
+                loss = criterion(active_preds, active_targets).mean()
 
             total_loss += loss.item()
             count += 1
@@ -67,8 +84,9 @@ def evaluate(model, val_loader, device):
     return total_loss / count
 
 
-def train(args):
+def train(args, delta=False):
     set_seed(args.seed)
+    print(f"Training using {'Delta Prediction' if delta else 'State Prediction'}")
 
     # cuda -> metal -> cpu
     device = torch.device(
@@ -129,8 +147,14 @@ def train(args):
     print(f"Feature Dimension: {input_dim}")
 
     # 2. Model
-    model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
+    if delta:
+        model = StateCentricLSTM_Delta(input_dim, hidden_dim=args.hidden_dim).to(device)
+    else:
+        model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
+
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    if delta:
+        criterion = MSELoss(reduction="none")
 
     # Logging
     log_file = os.path.join(args.save_dir, f"{args.domain}_training_log.csv")
@@ -154,13 +178,9 @@ def train(args):
             if not valid_mask.any():
                 continue
 
-            states = states[valid_mask]
-            goals = goals[valid_mask]
-            lengths = lengths[valid_mask]
-
-            states = states.to(device)
-            goals = goals.to(device)
-            lengths = lengths.to(device)
+            states = states[valid_mask].to(device)
+            goals = goals[valid_mask].to(device)
+            lengths = lengths[valid_mask].to(device)
 
             # Prepare Inputs and Targets
             # Input: S_0 ... S_{T-1}
@@ -173,6 +193,9 @@ def train(args):
             # Input: S_0 ... S_{T-1}
             input_states = states[:, :-1, :]
             target_states = states[:, 1:, :]
+
+            if delta:
+                target_deltas = target_states - input_states
 
             # Adjust lengths for the sliced sequence
             input_lengths = lengths - 1
@@ -192,15 +215,23 @@ def train(args):
             # targets: [B, T, D] -> [N, D]
             active_preds = preds[mask]
 
-            # We predict the State directly
-            active_targets = target_states[mask]
+            if not delta:
+                # We predict the State directly
+                active_targets = target_states[mask]
 
-            # Cosine Embedding Loss
-            # We want preds and targets to point in the same direction (target=1)
-            # Loss = 1 - cos_sim(x, y)
-            loss = (
-                1.0 - F.cosine_similarity(active_preds, active_targets, dim=-1).mean()
-            )
+                # Cosine Embedding Loss
+                # We want preds and targets to point in the same direction (target=1)
+                # Loss = 1 - cos_sim(x, y)
+                loss = (
+                    1.0
+                    - F.cosine_similarity(active_preds, active_targets, dim=-1).mean()
+                )
+
+            else:
+                active_targets = target_deltas[mask]
+
+                # Loss: MSE between Predicted Delta and Actual Delta
+                loss = criterion(active_preds, active_targets).mean()
 
             optimizer.zero_grad()
             loss.backward()
@@ -213,7 +244,7 @@ def train(args):
         avg_train_loss = train_loss / count if count > 0 else 0
 
         # Validation Loop
-        avg_val_loss = evaluate(model, val_loader, device)
+        avg_val_loss = evaluate(model, val_loader, device, delta)
 
         print(
             f"Epoch {epoch + 1}: Train Loss {avg_train_loss:.6f} | Val Loss {avg_val_loss:.6f}"
@@ -254,4 +285,4 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=13, help="Random seed")
     args = parser.parse_args()
 
-    train(args)
+    train(args, delta)

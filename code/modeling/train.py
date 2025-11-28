@@ -1,8 +1,8 @@
 import argparse
 import os
+from code.common.utils import set_seed, worker_init_fn
 from code.modeling.dataset import PlanningTrajectoryDataset, collate_trajectories
 from code.modeling.models import StateCentricLSTM
-from code.common.utils import set_seed, worker_init_fn
 
 import torch
 import torch.nn.functional as F
@@ -84,6 +84,7 @@ def train(args):
     print(f"Loading datasets for {args.domain}...")
     train_ds = PlanningTrajectoryDataset(args.data_dir, args.domain, "train")
     val_ds = PlanningTrajectoryDataset(args.data_dir, args.domain, "validation")
+    print(f"  Train Trajectories: {len(train_ds)} | Val Trajectories: {len(val_ds)}")
 
     if len(train_ds) == 0:
         print(f"Error: No training data found for {args.domain}. Skipping.")

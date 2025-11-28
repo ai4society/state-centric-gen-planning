@@ -1,8 +1,9 @@
 import argparse
 import json
 import os
-from code.modeling.models import StateCentricLSTM
 from code.common.utils import set_seed
+from code.modeling.models import StateCentricLSTM
+
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -240,9 +241,10 @@ def run_inference(args):
             print(f"Skipping {split} (not found)")
             continue
 
-        prob_files = sorted([f for f in os.listdir(split_dir) if f.endswith(".pddl")])
         results = []
         solved_count = 0
+        prob_files = sorted([f for f in os.listdir(split_dir) if f.endswith(".pddl")])
+        print(f" Found {len(prob_files)} problems for {split}")
 
         for prob_file in tqdm(prob_files, desc=f"Solving {split}"):
             prob_path = os.path.join(split_dir, prob_file)

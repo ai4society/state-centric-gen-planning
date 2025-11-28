@@ -35,10 +35,11 @@ for DOMAIN in "${DOMAINS[@]}"; do
     uv run python -m code.encoding-generation.generate_graph_embeddings --domain "$DOMAIN"
 
     # 2. Training
+    echo ""
     echo "[1/2] Starting Training..."
     uv run python -m code.modeling.train \
         --domain "$DOMAIN" \
-        --epochs $EPOCHS \
+        --epochs $EPOCHS
 
     # Check if training succeeded by looking for the best checkpoint
     CHECKPOINT="checkpoints/${DOMAIN}_lstm_best.pt"
@@ -48,6 +49,7 @@ for DOMAIN in "${DOMAINS[@]}"; do
     fi
 
     # 3. Inference (Latent Space Search)
+    echo ""
     echo "[2/2] Starting Inference..."
     uv run python -m code.modeling.inference \
         --domain "$DOMAIN" \

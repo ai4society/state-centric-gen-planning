@@ -1,7 +1,8 @@
 import argparse
 import os
 from code.modeling.dataset import PlanningTrajectoryDataset, collate_trajectories
-from code.modeling.models import StateCentricLSTM_1, StateCentricLSTM_2  # noqa: F401
+from code.modeling.models import StateCentricLSTM
+from code.common.utils import set_seed, worker_init_fn
 
 import torch
 import torch.nn.functional as F
@@ -67,6 +68,8 @@ def evaluate(model, val_loader, device):
 
 
 def train(args):
+    set_seed(args.seed)
+
     # cuda -> metal -> cpu
     device = torch.device(
         "cuda"
@@ -86,18 +89,26 @@ def train(args):
         print(f"Error: No training data found for {args.domain}. Skipping.")
         return
 
+    # Use worker_init_fn and a generator
+    g = torch.Generator()
+    g.manual_seed(args.seed)
+
     train_loader = DataLoader(
         train_ds,
         batch_size=args.batch_size,
         shuffle=True,
         collate_fn=collate_trajectories,
         num_workers=8,
+        worker_init_fn=worker_init_fn,
+        generator=g,
     )
     val_loader = DataLoader(
         val_ds,
         batch_size=args.batch_size,
         collate_fn=collate_trajectories,
         num_workers=8,
+        worker_init_fn=worker_init_fn,
+        generator=g,
     )
 
     # Determine input dimension safely
@@ -117,8 +128,7 @@ def train(args):
     print(f"Feature Dimension: {input_dim}")
 
     # 2. Model
-    # model = StateCentricLSTM_1(input_dim, hidden_dim=args.hidden_dim).to(device)
-    model = StateCentricLSTM_2(input_dim, hidden_dim=args.hidden_dim).to(device)
+    model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     # Logging
@@ -239,7 +249,8 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--hidden_dim", type=int, default=256)
-    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--lr", type=float, default=1e-2)
+    parser.add_argument("--seed", type=int, default=13, help="Random seed")
     args = parser.parse_args()
 
     train(args)

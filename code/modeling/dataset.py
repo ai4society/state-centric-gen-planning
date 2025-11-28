@@ -20,22 +20,12 @@ class PlanningTrajectoryDataset(Dataset):
             self.traj_files = []
         else:
             all_files = glob.glob(os.path.join(target_dir, "*.npy"))
-            self.traj_files = [f for f in all_files if not f.endswith("_goal.npy")]
+            # FILTER AND SORT
+            filtered_files = [f for f in all_files if not f.endswith("_goal.npy")]
+            self.traj_files = sorted(filtered_files)
 
     def __len__(self):
         return len(self.traj_files)
-
-    # def normalize(self, vec):
-    #     """
-    #     L1 Normalization: Converts counts to frequencies.
-    #     Input: [..., D]
-    #     Output: [..., D]
-    #     """
-    #     # Sum across the last dimension (features)
-    #     sums = vec.sum(axis=-1, keepdims=True)
-    #     # Avoid division by zero
-    #     sums[sums == 0] = 1.0
-    #     return vec / sums
 
     def __getitem__(self, idx):
         traj_path = self.traj_files[idx]

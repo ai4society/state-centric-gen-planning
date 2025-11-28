@@ -1,8 +1,8 @@
 import argparse
 import json
 import os
-from code.modeling.models import StateCentricLSTM_1, StateCentricLSTM_2  # noqa: F401
-
+from code.modeling.models import StateCentricLSTM
+from code.common.utils import set_seed
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -201,6 +201,8 @@ def solve_problem(
 
 
 def run_inference(args):
+    set_seed(args.seed)
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
@@ -224,7 +226,7 @@ def run_inference(args):
 
     # 3. Load LSTM
     print(f"Loading LSTM from {args.checkpoint}...")
-    model = StateCentricLSTM_2(input_dim, hidden_dim=args.hidden_dim).to(device)
+    model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
 
@@ -289,6 +291,7 @@ if __name__ == "__main__":
     parser.add_argument("--hidden_dim", type=int, default=256)
     parser.add_argument("--max_steps", type=int, default=100)
     parser.add_argument("--beam_width", type=int, default=2, help="Search beam width")
+    parser.add_argument("--seed", type=int, default=13, help="Random seed")
     args = parser.parse_args()
 
     run_inference(args)

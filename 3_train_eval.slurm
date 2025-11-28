@@ -26,10 +26,7 @@ export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 DOMAINS=("blocks" "gripper" "logistics" "visitall-from-everywhere")
 
 # Hyperparameters
-EPOCHS=125
-BATCH_SIZE=32
-HIDDEN_DIM=256
-LR=0.01
+EPOCHS=250
 
 for DOMAIN in "${DOMAINS[@]}"; do
     echo "*** PROCESSING DOMAIN: $DOMAIN ***"
@@ -41,12 +38,7 @@ for DOMAIN in "${DOMAINS[@]}"; do
     echo "[1/2] Starting Training..."
     uv run python -m code.modeling.train \
         --domain "$DOMAIN" \
-        --data_dir "data/encodings/graphs" \
-        --save_dir "checkpoints" \
         --epochs $EPOCHS \
-        --batch_size $BATCH_SIZE \
-        --hidden_dim $HIDDEN_DIM \
-        --lr $LR
 
     # Check if training succeeded by looking for the best checkpoint
     CHECKPOINT="checkpoints/${DOMAIN}_lstm_best.pt"
@@ -57,17 +49,9 @@ for DOMAIN in "${DOMAINS[@]}"; do
 
     # 3. Inference (Latent Space Search)
     echo "[2/2] Starting Inference..."
-
-    # This script automatically runs on both 'test-interpolation' and 'test-extrapolation'
     uv run python -m code.modeling.inference \
         --domain "$DOMAIN" \
-        --checkpoint "$CHECKPOINT" \
-        --pddl_dir "data/pddl" \
-        --data_dir "data" \
-        --results_dir "results" \
-        --hidden_dim $HIDDEN_DIM \
-        --max_steps 100 \
-        --beam_width 3
+        --checkpoint "$CHECKPOINT"
 
     echo "Finished processing $DOMAIN"
     echo ""

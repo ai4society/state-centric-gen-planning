@@ -5,7 +5,8 @@ import subprocess
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from pprint import pprint
-
+import random
+import numpy as np
 from tqdm import tqdm
 
 from .utils.pddl_utils import get_initial_state, parse_val_output_to_trajectory
@@ -102,7 +103,12 @@ def main():
     parser.add_argument("--output_dir", default="data/states")
     parser.add_argument("--report_path", default="code/data-processing/logs/")
     parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--seed", type=int, default=13)
     args = parser.parse_args()
+
+    # Set seeds
+    random.seed(args.seed)
+    np.random.seed(args.seed)
 
     tasks = []
     plans_path = Path(args.plans_dir)

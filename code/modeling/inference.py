@@ -14,8 +14,6 @@ from wlplan.data import DomainDataset, ProblemDataset
 from wlplan.feature_generator import load_feature_generator
 from wlplan.planning import Atom, State, parse_domain, parse_problem
 
-delta = True
-
 
 def embed_state_to_tensor(atoms_set, feature_gen, wl_domain, wl_prob, pred_map, device):
     """
@@ -65,8 +63,8 @@ def solve_problem(
     max_steps,
     wl_domain,
     pred_map,
+    delta,
     beam_width=3,
-    delta=False,
 ):
     """
     Runs Latent Space Search using Beam Search with loop detection.
@@ -134,6 +132,9 @@ def solve_problem(
                 if delta:
                     # Reconstruct Next State: S_t + Delta
                     pred_next_emb = last_tensor + pred
+                else:
+                    # Model already predicts the next state directly
+                    pred_next_emb = pred
 
             # B. Generate Successors
             successors = []
@@ -146,7 +147,7 @@ def solve_problem(
                 continue
 
             # debugging
-            print(f"\nStep {len(plan)} | Current Best Score: {score:.4f}")
+            # print(f"\nStep {len(plan)} | Current Best Score: {score:.4f}")
 
             # C. Score Successors
             for op_name, next_atoms in successors:
@@ -161,11 +162,11 @@ def solve_problem(
                 )
 
                 if not delta:
-                    # Calculate Cosine Similarity (Higher is better)
-                    # We use negative cosine as the "score" because the beam sorts ascending (lower is better)
-                    sim = F.cosine_similarity(pred_next_emb, cand_tensor, dim=-1).item()
+                    # Cosine similarity in [-1, 1], we want a cost where lower is better
+                    cos = F.cosine_similarity(pred_next_emb, cand_tensor, dim=-1).item()
+                    sim = 1.0 - cos  # cost in [0, 2]
                 else:
-                    # METRIC: Euclidean Distance (L2)
+                    # Euclidean Distance (L2)
                     # We want the candidate that is closest to our prediction
                     # Distance = ||Pred - Cand||
                     sim = torch.norm(pred_next_emb - cand_tensor, p=2).item()
@@ -173,7 +174,7 @@ def solve_problem(
                 # Print the op name and the similarity score
                 # If these are all 0.99+, the model is predicting Identity.
                 # If the 'correct' action is lower than others, the physics are wrong.
-                print(f"  Op: {op_name:<30} | Sim: {sim:.5f}")
+                # print(f"  Op: {op_name:<30} | Sim: {sim:.5f}")
 
                 # Update Score
                 # Beam search usually minimizes cost.
@@ -245,7 +246,7 @@ def run_inference(args):
 
     # 3. Load LSTM
     print(f"Loading LSTM from {args.checkpoint}...")
-    if delta:
+    if args.delta:
         model = StateCentricLSTM_Delta(input_dim, hidden_dim=args.hidden_dim).to(device)
     else:
         model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
@@ -253,8 +254,11 @@ def run_inference(args):
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
 
+    # optional tag so we don't overwrite baseline/delta results
+    tag_suffix = f"_{args.tag}" if getattr(args, "tag", "") else ""
+
     # 4. Run on Splits
-    splits = ["test-interpolation", "test-extrapolation"]
+    splits = ["validation", "test-interpolation", "test-extrapolation"]
 
     for split in splits:
         print(f"\n=== Testing on {split} ===")
@@ -281,8 +285,8 @@ def run_inference(args):
                     max_steps=args.max_steps,
                     wl_domain=wl_domain,
                     pred_map=pred_map,
+                    delta=args.delta,
                     beam_width=args.beam_width,
-                    delta=delta,
                 )
                 results.append(res)
                 if res["solved"]:
@@ -300,7 +304,9 @@ def run_inference(args):
 
         # Save
         os.makedirs(args.results_dir, exist_ok=True)
-        out_file = os.path.join(args.results_dir, f"{args.domain}_{split}_results.json")
+        out_file = os.path.join(
+            args.results_dir, f"{args.domain}{tag_suffix}_{split}_results.json"
+        )
         with open(out_file, "w") as f:
             json.dump(results, f, indent=2)
         print(f"Saved results to {out_file}")
@@ -316,7 +322,18 @@ if __name__ == "__main__":
     parser.add_argument("--hidden_dim", type=int, default=256)
     parser.add_argument("--max_steps", type=int, default=100)
     parser.add_argument("--beam_width", type=int, default=2, help="Search beam width")
+    parser.add_argument(
+        "--delta",
+        action="store_true",
+        help="Flag to whether perform delta-based preds. Def. is False",
+    )
+    parser.add_argument(
+        "--tag",
+        default="state",
+        help="Optional tag to disambiguate results, e.g., 'state' or 'delta'",
+    )
     parser.add_argument("--seed", type=int, default=13, help="Random seed")
+
     args = parser.parse_args()
 
     run_inference(args)

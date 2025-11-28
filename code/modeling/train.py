@@ -11,10 +11,8 @@ from torch.nn import MSELoss
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-delta = True
 
-
-def evaluate(model, val_loader, device, delta=False):
+def evaluate(model, val_loader, device, delta):
     """
     Computes Cosine loss on the validation set.
     The `delta` param
@@ -84,9 +82,9 @@ def evaluate(model, val_loader, device, delta=False):
     return total_loss / count
 
 
-def train(args, delta=False):
+def train(args):
     set_seed(args.seed)
-    print(f"Training using {'Delta Prediction' if delta else 'State Prediction'}")
+    print(f"Training using {'Delta Prediction' if args.delta else 'State Prediction'}")
 
     # cuda -> metal -> cpu
     device = torch.device(
@@ -147,13 +145,13 @@ def train(args, delta=False):
     print(f"Feature Dimension: {input_dim}")
 
     # 2. Model
-    if delta:
+    if args.delta:
         model = StateCentricLSTM_Delta(input_dim, hidden_dim=args.hidden_dim).to(device)
     else:
         model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    if delta:
+    if args.delta:
         criterion = MSELoss(reduction="none")
 
     # Logging
@@ -194,7 +192,7 @@ def train(args, delta=False):
             input_states = states[:, :-1, :]
             target_states = states[:, 1:, :]
 
-            if delta:
+            if args.delta:
                 target_deltas = target_states - input_states
 
             # Adjust lengths for the sliced sequence
@@ -215,7 +213,7 @@ def train(args, delta=False):
             # targets: [B, T, D] -> [N, D]
             active_preds = preds[mask]
 
-            if not delta:
+            if not args.delta:
                 # We predict the State directly
                 active_targets = target_states[mask]
 
@@ -244,7 +242,7 @@ def train(args, delta=False):
         avg_train_loss = train_loss / count if count > 0 else 0
 
         # Validation Loop
-        avg_val_loss = evaluate(model, val_loader, device, delta)
+        avg_val_loss = evaluate(model, val_loader, device, args.delta)
 
         print(
             f"Epoch {epoch + 1}: Train Loss {avg_train_loss:.6f} | Val Loss {avg_val_loss:.6f}"
@@ -282,7 +280,12 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--hidden_dim", type=int, default=256)
     parser.add_argument("--lr", type=float, default=1e-2)
+    parser.add_argument(
+        "--delta",
+        action="store_true",
+        help="Flag to whether perform delta-based preds. Def. is False",
+    )
     parser.add_argument("--seed", type=int, default=13, help="Random seed")
     args = parser.parse_args()
 
-    train(args, delta)
+    train(args)

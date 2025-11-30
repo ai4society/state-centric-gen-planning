@@ -61,7 +61,7 @@ def generate_problem_gripper(num_balls, problem_name):
     goal_preds = [f"(at {b} roomb)" for b in balls]
 
     pddl = f"(define (problem {problem_name})\n"
-    pddl += "  (:domain gripper)\n"
+    pddl += "  (:domain gripper-strips)\n"
     pddl += f"  (:objects rooma roomb left right {' '.join(balls)})\n"
     pddl += "  (:init\n    " + "\n    ".join(init_preds) + "\n  )\n"
     pddl += "  (:goal (and\n    " + "\n    ".join(goal_preds) + "\n  ))\n)"
@@ -85,8 +85,6 @@ def generate_problem_logistics(
     # Setup Cities and Locations
     for i, city in enumerate(cities):
         init_preds.append(f"(city {city})")
-        
-        # FIX: Define 't' before using it
         t = trucks[i]
         init_preds.append(f"(truck {t})")
         

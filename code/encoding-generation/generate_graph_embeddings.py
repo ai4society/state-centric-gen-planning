@@ -10,10 +10,6 @@ from wlplan.data import DomainDataset, ProblemDataset
 from wlplan.feature_generator import init_feature_generator
 from wlplan.planning import Atom, State, parse_domain, parse_problem
 
-# Configuration
-DATA_DIR = "./data"
-OUTPUT_DIR = os.path.join(DATA_DIR, "encodings", "graphs")
-MODEL_DIR = os.path.join(DATA_DIR, "encodings", "models")
 ALL_DOMAINS = ["blocks", "gripper", "logistics", "visitall-from-everywhere"]
 SPLITS = ["train", "validation", "test-interpolation", "test-extrapolation"]
 
@@ -44,9 +40,22 @@ def parse_traj_line_to_state(line, pred_map):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--data_dir", default="data")
+    parser.add_argument("--output_dir", default="data/encodings/graphs")
+    parser.add_argument("--model_dir", default="data/encodings/models")
     parser.add_argument("--iterations", type=int, default=2, help="WL iterations")
     parser.add_argument("--domain", type=str, default=None, help="Specific domain")
     args = parser.parse_args()
+
+    # Make sure directories exists
+    os.makedirs(args.output_dir, exist_ok=True)
+    os.makedirs(args.model_dir, exist_ok=True)
+    os.makedirs(os.path.join(args.data_dir, "pddl"), exist_ok=True)
+    os.makedirs(os.path.join(args.data_dir, "states"), exist_ok=True)
+    os.makedirs(os.path.join(args.data_dir, "plans"), exist_ok=True)
+    os.makedirs(os.path.join(args.data_dir, "encodings"), exist_ok=True)
+    os.makedirs(os.path.join(args.data_dir, "encodings", "graphs"), exist_ok=True)
+    os.makedirs(os.path.join(args.data_dir, "encodings", "models"), exist_ok=True)
 
     domains_to_run = [args.domain] if args.domain else ALL_DOMAINS
 
@@ -54,8 +63,8 @@ def main():
         print(f"\n=== Processing Domain: {domain_name} ===")
 
         # Paths
-        domain_pddl = os.path.join(DATA_DIR, "pddl", domain_name, "domain.pddl")
-        train_states_dir = os.path.join(DATA_DIR, "states", domain_name, "train")
+        domain_pddl = os.path.join(args.data_dir, "pddl", domain_name, "domain.pddl")
+        train_states_dir = os.path.join(args.data_dir, "states", domain_name, "train")
 
         if not os.path.exists(domain_pddl):
             print(f"  [Error] Domain PDDL not found: {domain_pddl}")
@@ -88,7 +97,7 @@ def main():
         train_files = sorted(
             [f for f in os.listdir(train_states_dir) if f.endswith(".traj")]
         )
-        pddl_train_dir = os.path.join(DATA_DIR, "pddl", domain_name, "train")
+        pddl_train_dir = os.path.join(args.data_dir, "pddl", domain_name, "train")
 
         wl_problems = []
 
@@ -124,17 +133,17 @@ def main():
         print(f"  [WL] Vocabulary Size: {feature_gen.get_n_features()}")
 
         # 4. Save Feature Generator (JSON)
-        os.makedirs(MODEL_DIR, exist_ok=True)
-        save_path = os.path.join(MODEL_DIR, f"{domain_name}_wl.json")
+        os.makedirs(args.model_dir, exist_ok=True)
+        save_path = os.path.join(args.model_dir, f"{domain_name}_wl.json")
         feature_gen.save(save_path)
         print(f"  [WL] Saved model to {save_path}")
 
         # 5. Embed All Splits
         for split in SPLITS:
             print(f"  [WL] Embedding split: {split}")
-            split_state_dir = os.path.join(DATA_DIR, "states", domain_name, split)
-            split_pddl_dir = os.path.join(DATA_DIR, "pddl", domain_name, split)
-            split_out_dir = os.path.join(OUTPUT_DIR, domain_name, split)
+            split_state_dir = os.path.join(args.data_dir, "states", domain_name, split)
+            split_pddl_dir = os.path.join(args.data_dir, "pddl", domain_name, split)
+            split_out_dir = os.path.join(args.output_dir, domain_name, split)
             os.makedirs(split_out_dir, exist_ok=True)
 
             if not os.path.exists(split_state_dir):

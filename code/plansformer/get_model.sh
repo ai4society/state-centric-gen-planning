@@ -1,1 +1,0 @@
-wget "https://www.dropbox.com/scl/fi/sc2syaax93i50bn14gn3w/plansformer_v3.zip?rlkey=a5qf2fanfn5028yx78drf1hic&e=1&st=xzu5fewr&dl=0"

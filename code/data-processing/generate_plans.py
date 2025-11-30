@@ -58,8 +58,8 @@ def solve_problem(domain_path, problem_path, plan_output_path):
         try:
             subprocess.run(
                 cmd_base,
-                cwd=tmp_dir,  # CRITICAL: Run in temp dir
-                stdout=subprocess.DEVNULL,
+                cwd=tmp_dir,
+                stdout=subprocess.PIPE, 
                 stderr=subprocess.PIPE,
                 check=True,
                 text=True,
@@ -83,8 +83,8 @@ def solve_problem(domain_path, problem_path, plan_output_path):
         try:
             subprocess.run(
                 cmd_fall,
-                cwd=tmp_dir,  # CRITICAL: Run in temp dir
-                stdout=subprocess.DEVNULL,
+                cwd=tmp_dir,
+                stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 check=True,
                 text=True,
@@ -107,9 +107,20 @@ def solve_problem(domain_path, problem_path, plan_output_path):
                     "reason": f"Timeout in fallback ({TIMEOUT_FALLBACK})",
                 }
 
-            error_msg = (
-                e.stderr.strip().splitlines()[-1] if e.stderr else "Unknown FD error"
-            )
+            # UPDATED: Check both stderr and stdout for error messages
+            error_msg = "Unknown FD error"
+            if e.stderr and e.stderr.strip():
+                error_msg = e.stderr.strip().splitlines()[-1]
+            elif e.stdout and e.stdout.strip():
+                # FD often prints "Error: Domain name mismatch" to stdout
+                lines = e.stdout.strip().splitlines()
+                # Look for lines starting with Error
+                err_lines = [l for l in lines if "Error" in l or "error" in l]
+                if err_lines:
+                    error_msg = err_lines[-1]
+                else:
+                    error_msg = lines[-1]
+
             return {"status": "failed", "reason": f"FD Error: {error_msg}"}
 
 

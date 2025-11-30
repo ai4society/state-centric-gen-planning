@@ -114,6 +114,13 @@ def main():
     plans_path = Path(args.plans_dir)
     pddl_path = Path(args.pddl_dir)
     out_path = Path(args.output_dir)
+    report_path = Path(args.report_path)
+
+    # Make sure the paths exist
+    plans_path.mkdir(parents=True, exist_ok=True)
+    pddl_path.mkdir(parents=True, exist_ok=True)
+    out_path.mkdir(parents=True, exist_ok=True)
+    report_path.mkdir(parents=True, exist_ok=True)
 
     # Walk through plans directory
     for domain_dir in plans_path.iterdir():
@@ -162,7 +169,7 @@ def main():
             stats[res["status"]] += 1
 
     # Save Detailed Report
-    report_path = args.report_path + "state_generation_report.csv"
+    report_path = report_path / "state_generation_report.csv"
     with open(report_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["problem", "status", "reason"])
         writer.writeheader()

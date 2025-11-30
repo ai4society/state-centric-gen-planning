@@ -5,6 +5,8 @@ data/pddl-test
 own/
 slurm-out/
 packages/
+plansformer/
+code/plansformer-old/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

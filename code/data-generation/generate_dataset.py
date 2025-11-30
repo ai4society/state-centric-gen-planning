@@ -11,14 +11,14 @@ from .generators import *
 CONFIG = {
     "blocks": {
         "splits": {
-            "train": {"count": 15, "complexity": [4, 6, 7]},  # 4, 6, 7 blocks
-            "validation": {"count": 5, "complexity": [8]},  # Val size 8
+            "train": {"count": 45, "complexity": [4, 6, 7]},  # 4, 6, 7 blocks
+            "validation": {"count": 15, "complexity": [8]},  # Val size 8
             "test-interpolation": {
-                "count": 5,
+                "count": 15,
                 "complexity": [5],
             },  # Inter. size 5 blocks
             "test-extrapolation": {
-                "count": 45,
+                "count": 100,
                 "complexity": range(9, 18),
             },  # 9-17 blocks
         },
@@ -44,16 +44,16 @@ CONFIG = {
         "splits": {
             # Complexity = Total Cells
             "train": {
-                "count": 45,
+                "count": 1035,
                 "complexity": [1, 3, 4, 6, 10, 11, 12, 14, 16],
             },  # cells ∈ {1,3,4,6,10,11,12,14,16}
-            "validation": {"count": 10, "complexity": [18, 20]},  # 18 and 20 cells
+            "validation": {"count": 120, "complexity": [18, 20]},  # 18 and 20 cells
             "test-interpolation": {
-                "count": 25,
+                "count": 185,
                 "complexity": [2, 5, 8, 9, 15],
             },  # sizes {2,5,8,9,15} cells
             "test-extrapolation": {
-                "count": 490,
+                "count": 1095,
                 "complexity": range(24, 122),
             },  # sizes 24,25,…,121 cells
         },
@@ -61,11 +61,11 @@ CONFIG = {
     "logistics": {
         "splits": {
             # Complexity = Number of Goals
-            "train": {"count": 15, "complexity": [1, 3, 5]},  # goals ∈ {1,3,5}
-            "validation": {"count": 5, "complexity": [6]},  # 6 goals
-            "test-interpolation": {"count": 10, "complexity": [2, 4]},  # goals ∈ {2,4}
+            "train": {"count": 60, "complexity": [1, 3, 5]},  # goals ∈ {1,3,5}
+            "validation": {"count": 20, "complexity": [6]},  # 6 goals
+            "test-interpolation": {"count": 45, "complexity": [2, 4]},  # goals ∈ {2,4}
             "test-extrapolation": {
-                "count": 45,
+                "count": 90,
                 "complexity": range(7, 16),
             },  # goals ∈ {7,8,…,15}
         },
@@ -106,30 +106,25 @@ def main():
         # 2. Generate Splits
         for split, split_cfg in config["splits"].items():
             count = split_cfg["count"]
-            complexity_opts = split_cfg["complexity"]
+            complexity_opts = list(split_cfg["complexity"])
 
-            # Convert range to list if necessary
-            possible_complexities = list(complexity_opts)
+            # Create a list that repeats the complexities enough times to cover 'count'
+            # e.g. count=10, opts=[A,B] -> [A,B,A,B,A,B,A,B,A,B]
+            
+            if not complexity_opts:
+                print(f"Warning: No complexities defined for {domain}/{split}")
+                continue
 
-            # Build the list of target complexities to ensure coverage
-            target_complexities = []
-
-            # Priority 1: Add one of each available complexity
-            if count >= len(possible_complexities):
-                target_complexities.extend(possible_complexities)
-                # Priority 2: Fill the rest with random choices
-                remaining = count - len(possible_complexities)
-                for _ in range(remaining):
-                    target_complexities.append(random.choice(possible_complexities))
-            else:
-                # If count is too small to cover everything, take the first 'count' unique ones
-                # (In a real run, count should be >> len(possible_complexities))
-                print(
-                    f"  [Warning] Count {count} is smaller than complexity options {len(possible_complexities)} for {split}. Truncating."
-                )
-                target_complexities = possible_complexities[:count]
-
-            # Shuffle so the file indices don't correlate strictly with size
+            # How many full sets of complexities do we need?
+            num_repeats = math.ceil(count / len(complexity_opts))
+            
+            # Create the full list
+            target_complexities = (complexity_opts * num_repeats)
+            
+            # Trim to exact count
+            target_complexities = target_complexities[:count]
+            
+            # Shuffle to avoid patterns (like 1,2,3,1,2,3) in file naming
             random.shuffle(target_complexities)
 
             split_dir = os.path.join(domain_dir, split)

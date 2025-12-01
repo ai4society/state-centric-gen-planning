@@ -15,6 +15,7 @@ dependencies = [
     "tqdm>=4.67.1",
     "transformers>=4.57.3",
     "wlplan",
+    "xgboost>=3.1.2",
 ]
 
 [tool.uv.sources]

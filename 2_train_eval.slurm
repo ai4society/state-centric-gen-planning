@@ -1,32 +1,44 @@
 #!/bin/bash
-#SBATCH --job-name=train_eval
+#SBATCH --job-name=gen_plan_unified
 #SBATCH --output=slurm-out/%x_%A_%a.out
 #SBATCH --error=slurm-out/%x_%A_%a.err
-#SBATCH --account=nairr250014-ai      # Charge AI allocation
-#SBATCH --partition=ai                # Use the AI partition (H100s)
-#SBATCH --gres=gpu:1                  # 1 GPU per domain
-#SBATCH --time=01:00:00
+#SBATCH --account=nairr250014-ai
+#SBATCH --partition=ai
+#SBATCH --gres=gpu:1
+#SBATCH --time=04:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --array=0-3                   # One array index per domain
+#SBATCH --array=0-3                   # Array for Domains
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=niting@email.sc.edu
 
+# CONFIGURATION
+
+# 1. Which Models to run? (Space separated: "lstm" "xgboost" "llama")
+# Can override this by passing arguments to sbatch, e.g.:
+# `sbatch script.slurm "lstm"`
+TARGET_MODELS=${1:-"lstm xgboost"}
+
+# 2. Which Modes? ("state" "delta")
+TARGET_MODES=("state" "delta")
+
+# 3. Which Encoding? (Folder name inside data/encodings/)
+# Currently only "graphs" is implemented...
+ENCODING="graphs"
+
+# SETUP
 echo "Job started on $(hostname) at $(date)"
 echo "SLURM_ARRAY_TASK_ID = $SLURM_ARRAY_TASK_ID"
 
-# 1. Setup Environment
 module load modtree/gpu
 module load gcc/11.2.0
 module use "$HOME/privatemodules"
-
-# Ensure 'uv' is in PATH
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 
 mkdir -p slurm-out
 
-# 2. Map array index to domain
+# Map array index to domain
 DOMAINS=("blocks" "gripper" "logistics" "visitall-from-everywhere")
 DOMAIN=${DOMAINS[$SLURM_ARRAY_TASK_ID]}
 
@@ -35,47 +47,103 @@ if [ -z "$DOMAIN" ]; then
     exit 1
 fi
 
-echo "*** PROCESSING DOMAIN: $DOMAIN ***"
+DATA_DIR="data/encodings/${ENCODING}"
 
-# 3. Hyperparameters
-EPOCHS=250
-MODES=("state" "delta")
-TYPE="gr-lstm"
+echo " CONFIGURATION SUMMARY"
+echo " Domain:    $DOMAIN"
+echo " Encoding:  $ENCODING"
+echo " Models:    $TARGET_MODELS"
+echo " Modes:     ${TARGET_MODES[*]}"
+echo " Data Dir:  $DATA_DIR"
 
-for MODE in "${MODES[@]}"; do
-    echo ""
-    echo "*** DOMAIN: $DOMAIN | MODE: $MODE ***"
+# EXECUTION LOOP
+for MODEL in $TARGET_MODELS; do
+    for MODE in "${TARGET_MODES[@]}"; do
 
-    # Choose save directory and flags based on mode
-    if [ "$MODE" == "delta" ]; then
-        SAVE_DIR="checkpoints/delta"
-        DELTA_FLAG="--delta"
-        TAG="delta"
-    else
-        SAVE_DIR="checkpoints/state"
-        DELTA_FLAG=""
-        TAG="state"
-    fi
+        # 1. Define Paths based on hierarchy
+        # Structure: checkpoints/<encoding>/<model>/<mode>/
+        # Structure: results/<encoding>/<model>/<mode>/
 
-    mkdir -p "$SAVE_DIR"
+        CHECKPOINT_DIR="checkpoints/${ENCODING}/${MODEL}_${MODE}"
+        RESULTS_DIR="results/${ENCODING}/${MODEL}_${MODE}"
 
-    echo ""
-    echo "[1/2] Training ($MODE)..."
-    uv run python -m code.modeling.train_lstm \
-        --domain "$DOMAIN" \
-        --epochs $EPOCHS \
-        --save_dir "$SAVE_DIR" \
-        $DELTA_FLAG
+        mkdir -p "$CHECKPOINT_DIR"
+        mkdir -p "$RESULTS_DIR"
 
-    echo ""
-    echo "[2/2] Inference ($MODE)..."
-    CHECKPOINT="${SAVE_DIR}/${DOMAIN}_lstm_best.pt"
-    uv run python -m code.modeling.inference_lstm \
-        --domain "$DOMAIN" \
-        --checkpoint "$CHECKPOINT" \
-        --results_dir "results/${TYPE}" \
-        $DELTA_FLAG \
-        --tag "$TAG"
+        # 2. Set Flags
+        if [ "$MODE" == "delta" ]; then
+            DELTA_FLAG="--delta"
+        else
+            DELTA_FLAG=""
+        fi
+
+        echo ""
+        echo "**********************************"
+        echo " RUNNING: $MODEL | MODE: $MODE"
+        echo "**********************************"
+
+        # 3. Dispatcher Switch
+        case $MODEL in
+
+        "lstm")
+            # LSTM TRAINING
+            echo "[LSTM] Training..."
+            uv run python -m code.modeling.train_lstm \
+                --domain "$DOMAIN" \
+                --data_dir "$DATA_DIR" \
+                --save_dir "$CHECKPOINT_DIR" \
+                $DELTA_FLAG
+
+            # LSTM INFERENCE
+            echo "[LSTM] Inference..."
+            BEST_PT="${CHECKPOINT_DIR}/${DOMAIN}_lstm_best.pt"
+            if [ -f "$BEST_PT" ]; then
+                uv run python -m code.modeling.inference_lstm \
+                    --domain "$DOMAIN" \
+                    --checkpoint "$BEST_PT" \
+                    --results_dir "$RESULTS_DIR" \
+                    $DELTA_FLAG \
+                    --tag "$MODE"
+            else
+                echo "Skipping Inference: Checkpoint not found ($BEST_PT)"
+            fi
+            ;;
+
+        "xgboost")
+            # XGBOOST TRAINING
+            echo "[XGB] Training..."
+            uv run python -m code.modeling.train_xgb \
+                --domain "$DOMAIN" \
+                --save_dir "$CHECKPOINT_DIR" \
+                --data_dir "$DATA_DIR" \
+                $DELTA_FLAG
+
+            # XGBOOST INFERENCE
+            echo "[XGB] Inference..."
+            # XGB saves .json models
+            if [ -f "${CHECKPOINT_DIR}/${DOMAIN}_xgb.json" ]; then
+                uv run python -m code.modeling.inference_xgb \
+                    --domain "$DOMAIN" \
+                    --checkpoint_dir "$CHECKPOINT_DIR" \
+                    --results_dir "$RESULTS_DIR" \
+                    $DELTA_FLAG \
+                    --tag "$MODE"
+            else
+                echo "Skipping Inference: Model not found"
+            fi
+            ;;
+
+        "llama")
+            # Placeholder for future integration
+            echo "[Llama] Not yet implemented in this script."
+            ;;
+
+        *)
+            echo "Error: Unknown model '$MODEL'"
+            ;;
+        esac
+
+    done
 done
 
 echo "Job finished at $(date)"

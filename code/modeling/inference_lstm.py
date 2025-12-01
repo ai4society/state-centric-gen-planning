@@ -1,9 +1,7 @@
 import argparse
 import json
 import os
-import subprocess
-import tempfile
-from code.common.utils import set_seed
+from code.common.utils import set_seed, validate_plan
 from code.modeling.models import StateCentricLSTM, StateCentricLSTM_Delta
 
 import numpy as np
@@ -15,62 +13,6 @@ from tqdm import tqdm
 from wlplan.data import DomainDataset, ProblemDataset
 from wlplan.feature_generator import load_feature_generator
 from wlplan.planning import Atom, State, parse_domain, parse_problem
-
-
-def validate_plan(domain_path, problem_path, plan_actions, val_path):
-    """
-    Writes the plan to a temp file and runs VAL to verify correctness.
-    Returns: (is_valid: bool, output_message: str)
-    """
-    if not plan_actions:
-        return False, "Empty plan generated"
-
-    # 1. Write plan to temporary file
-    # VAL expects actions on separate lines: (action arg1 arg2)
-    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".plan") as tmp:
-        for action in plan_actions:
-            # Ensure action is wrapped in parens if not already (pyperplan usually keeps them)
-            act_str = str(action)
-            if not act_str.startswith("("):
-                act_str = f"({act_str})"
-            tmp.write(f"{act_str}\n")
-        tmp_plan_path = tmp.name
-
-    # 2. Run VAL
-    # Command: Validate -v domain.pddl problem.pddl plan.plan
-    cmd = [val_path, str(domain_path), str(problem_path), tmp_plan_path]
-
-    try:
-        result = subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            check=False,
-        )
-        output = result.stdout
-
-        # 3. Parse Output
-        # VAL usually prints "Plan valid" or "Plan executed successfully"
-        if "Plan valid" in output or "Plan executed successfully" in output:
-            is_valid = True
-            msg = "Plan valid"
-        else:
-            is_valid = False
-            # Try to grab the error line
-            lines = output.splitlines()
-            errors = [l for l in lines if "Error" in l or "Failed" in l]
-            msg = errors[-1] if errors else "VAL returned failure (unknown reason)"
-
-    except Exception as e:
-        is_valid = False
-        msg = f"VAL execution error: {str(e)}"
-    finally:
-        # Cleanup temp file
-        if os.path.exists(tmp_plan_path):
-            os.remove(tmp_plan_path)
-
-    return is_valid, msg
 
 
 def embed_state_to_tensor(atoms_set, feature_gen, wl_domain, wl_prob, pred_map, device):
@@ -132,10 +74,14 @@ def solve_problem(
     )
 
     # 1. Pyperplan Parsing (for successors)
-    parser = Parser(domain_path, prob_path)
-    dom = parser.parse_domain()
-    prob = parser.parse_problem(dom)
-    task = ground(prob)
+    try:
+        parser = Parser(domain_path, prob_path)
+        dom = parser.parse_domain()
+        prob = parser.parse_problem(dom)
+        task = ground(prob)
+    except Exception as e:
+        print(f"Pyperplan Parsing Error on {prob_file}: {e}")
+        raise e
 
     # 2. WLPlan Context (for embedding)
     wl_prob = parse_problem(domain_path, prob_path)
@@ -312,9 +258,6 @@ def run_inference(args):
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
 
-    # optional tag so we don't overwrite baseline/delta results
-    tag_suffix = f"_{args.tag}" if getattr(args, "tag", "") else ""
-
     # 4. Run on Splits
     splits = ["validation", "test-interpolation", "test-extrapolation"]
 
@@ -327,6 +270,7 @@ def run_inference(args):
 
         results = []
         solved_count = 0
+        executable_count = 0
         prob_files = sorted([f for f in os.listdir(split_dir) if f.endswith(".pddl")])
         print(f" Found {len(prob_files)} problems for {split}")
 
@@ -349,37 +293,43 @@ def run_inference(args):
                 )
 
                 # B. Validate Plan with VAL (External Verification)
-                # We validate even if search_solved is False, just in case the search
-                # stopped exactly at the goal but logic missed it, or to confirm failure.
-                # But typically we care if the plan generated so far is valid.
-
-                is_valid, val_msg = validate_plan(
+                print(" Validating plan with VAL...")
+                is_solved, is_executable = validate_plan(
                     domain_path=domain_pddl,
                     problem_path=prob_path,
                     plan_actions=res["plan"],
                     val_path=args.val_path,
                 )
 
-                res["val_solved"] = is_valid
-                res["val_reason"] = val_msg
+                # Store distinct metrics
+                res["val_solved"] = is_solved  # Goal Reached
+                res["val_executable"] = is_executable  # Physics Respected
 
                 # The final "solved" metric should rely on VAL
-                res["solved"] = is_valid
+                res["solved"] = is_solved
 
                 results.append(res)
-                if is_valid:
+
+                if is_solved:
                     solved_count += 1
+                if is_executable:
+                    executable_count += 1
 
             except Exception as e:
                 import traceback
 
                 traceback.print_exc()
-                print(f"Error: {e}")
+                print(f"Error processing {prob_file}: {e}")
                 results.append({"problem": prob_file, "solved": False, "error": str(e)})
 
         # Report
-        accuracy = solved_count / len(prob_files) if prob_files else 0
-        print(f"Result {split}: {solved_count}/{len(prob_files)} ({accuracy:.2%})")
+        total = len(prob_files)
+        accuracy = solved_count / total if total else 0
+        exec_rate = executable_count / total if total else 0
+
+        print(
+            f"Result {split}: Solved {solved_count}/{total} ({accuracy:.2%}) | Executable {executable_count}/{total} ({exec_rate:.2%})"
+        )
 
         # Save
         os.makedirs(args.results_dir, exist_ok=True)
@@ -413,8 +363,11 @@ if __name__ == "__main__":
         help="Optional tag to disambiguate results, e.g., 'state' or 'delta'",
     )
     parser.add_argument("--seed", type=int, default=13, help="Random seed")
+
     parser.add_argument(
-        "--val_path", default="VAL/bin/Validate", help="Path to VAL binary"
+        "--val_path",
+        default=os.environ.get("VAL_PATH", "VAL/bin/Validate"),
+        help="Path to VAL binary",
     )
 
     args = parser.parse_args()

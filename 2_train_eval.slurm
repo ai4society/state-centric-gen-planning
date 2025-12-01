@@ -59,29 +59,18 @@ for MODE in "${MODES[@]}"; do
 
     mkdir -p "$SAVE_DIR"
 
-
-    # echo ""
-    # echo "[0/2] Starting Encoding..."
-    # uv run python -m code.encoding-generation.generate_graph_embeddings --domain "$DOMAIN"
-
     echo ""
     echo "[1/2] Training ($MODE)..."
-    uv run python -m code.modeling.train \
+    uv run python -m code.modeling.train_lstm \
         --domain "$DOMAIN" \
         --epochs $EPOCHS \
         --save_dir "$SAVE_DIR" \
         $DELTA_FLAG
 
-    # Check if training succeeded by looking for the best checkpoint
-    CHECKPOINT="${SAVE_DIR}/${DOMAIN}_lstm_best.pt"
-    if [ ! -f "$CHECKPOINT" ]; then
-        echo "Error: Checkpoint $CHECKPOINT not found. Training may have failed. Skipping inference for MODE=$MODE."
-        continue
-    fi
-
     echo ""
     echo "[2/2] Inference ($MODE)..."
-    uv run python -m code.modeling.inference \
+    CHECKPOINT="${SAVE_DIR}/${DOMAIN}_lstm_best.pt"
+    uv run python -m code.modeling.inference_lstm \
         --domain "$DOMAIN" \
         --checkpoint "$CHECKPOINT" \
         --results_dir "results/${TYPE}" \

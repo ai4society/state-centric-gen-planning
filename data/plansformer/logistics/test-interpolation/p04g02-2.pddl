@@ -1,1 +1,0 @@
-load-truck package3 truck1 s0, load-truck package1 truck1 s0, drive-truck truck1 l0 l1, unload-truck package1 truck1 s1, load-truck package2 truck1 s1, drive-truck truck1 s1 s0 driver1, unload-truck package3 truck1 s0

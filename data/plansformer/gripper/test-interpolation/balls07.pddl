@@ -1,1 +1,0 @@
-pick robot1 ball3 room2, pick robot1 ball5 room0, move robot1 room1 room3, drop ball1 room3 ball5 room2 lgripper1, pick robot1 ball6 room2 lgripper1, move robot1 room2 room1, drop robot1 ball6 room1 lgripper1, pick robot1 ball7 room1 lgripper1, move robot1 room1 room2, drop robot1 ball7 room2 lgripper1

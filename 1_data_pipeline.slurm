@@ -18,25 +18,20 @@ export OMP_NUM_THREADS=1
 
 mkdir -p slurm-out
 
-# 2. Generate Dataset (PDDL Files)
-echo "STEP 1: Generating PDDL Dataset (Procedural Generation)"
-# This creates data/pddl/{domain}/{split}/*.pddl
-uv run python -m code.data-generation.generate_dataset
-
-# 3. Lowercase PDDL (Safety check)
+# 2. Lowercase PDDL (Safety check)
 echo "STEP 2: Normalizing PDDL (Lowercasing)"
 uv run python -m code.data-processing.utils.lowercase_pddl
 
-# 4. Generate Plans (Fast Downward)
+# 3. Generate Plans (Fast Downward)
 echo "STEP 3: Generating Plans (Fast Downward)"
 # Uses 120 cores to solve the thousands of problems generated in Step 1
 uv run python -m code.data-processing.generate_plans --workers 120
 
-# 5. Generate State Trajectories (VAL)
+# 4. Generate State Trajectories (VAL)
 echo "STEP 4: Generating State Trajectories (VAL)"
 uv run python -m code.data-processing.generate_states --workers 120
 
-# 6. Generate Graph Embeddings (WL)
+# 5. Generate Graph Embeddings (WL)
 echo "STEP 5: Generating Graph Embeddings (WL)"
 # This runs sequentially per domain but is fast enough for 1000s of small graphs.
 uv run python -m code.encoding-generation.generate_graph_embeddings

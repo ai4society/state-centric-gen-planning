@@ -1,76 +1,70 @@
 # Codebase Documentation
 
-This directory contains the scripts required to generate the dataset found in `../data`. The pipeline transforms raw PDDL into machine-learning-ready graph embeddings.
+This directory contains the scripts required to generate data, train models, and run inference.
 
 ## Directory Structure
 
 ```text
 code/
-├── data-processing/           # Step 1 & 2: Symbolic Processing
-│   ├── generate_plans.py      # Runs Fast Downward
-│   ├── generate_states.py     # Runs VAL to generate trajectories
-│   └── utils/
-│       ├── pddl_utils.py      # Parsing helpers (Regex/pddlpy)
-│       └── lowercase_pddl.py  # Normalization utility
-└── encoding-generation/       # Step 3: Vectorization
-    └── generate_graph_embeddings.py  # Runs wlplan (Graph Kernels)
+├── data-processing/           # Step 1 & 2: Symbolic Processing (PDDL/FastDownward/VAL)
+├── encoding-generation/       # Step 3: Vectorization (WL Graph Kernels)
+├── modeling/                  # Step 4 & 5: Machine Learning
+│   ├── dataset.py             # PyTorch Datasets & XGBoost Flattening logic
+│   ├── models.py              # PyTorch Architectures (LSTM)
+│   ├── train_lstm.py          # LSTM Training Script
+│   ├── inference_lstm.py      # LSTM Latent Beam Search
+│   ├── train_xgb.py           # XGBoost Training Script
+│   └── inference_xgb.py       # XGBoost Latent Beam Search
+└── common/                    # Shared Utilities (Seeding, VAL wrapper)
 ```
 
-## Pipeline Execution
+## Machine Learning Pipeline (`code/modeling/`)
 
-### Step 1: Plan Generation
+We support multiple architectures. All scripts accept a `--delta` flag to toggle between predicting raw states or state differences.
 
-Script: `code/data-processing/generate_plans.py`
+### 1. LSTM (Recurrent)
 
-- Input: `data/pddl/`
-- Output: `data/plans/`
-- Description: Runs the Fast Downward planner on every problem file. It attempts an optimal search (A\* `lmcut`) first. If that times out (60s), it falls back to a greedy search (GBFS `ff`) with a higher timeout (300s).
-- Command from the root directory (alternatively see the `data_gen.sh` file at the root):
-  ```bash
-  uv run python -m code.data-processing.generate_plans --workers 120
-  ```
+- **Script**: `train_lstm.py` / `inference_lstm.py`
+- **Logic**: Uses a standard LSTM with a projection layer.
+- **Input**: Sequence $[S_0, S_1, \dots, S_t]$
+- **Output**: $S_{t+1}$ (State mode) or $S_{t+1} - S_t$ (Delta mode).
 
-### Step 2: State Trajectory Generation
+### 2. XGBoost (Gradient Boosting)
 
-Script: `code/data-processing/generate_states.py`
+- **Script**: `train_xgb.py` / `inference_xgb.py`
+- **Logic**: Flattens the trajectory into independent transition pairs.
+- **Input**: Concatenation of $[S_t, Goal]$.
+- **Output**: $S_{t+1}$ (State mode) or $S_{t+1} - S_t$ (Delta mode).
+- **Note**: XGBoost uses the `multi:squarederror` objective to handle the multi-dimensional output vector (size $D \approx 500+$).
 
-- Input: `data/plans/` and `data/pddl/`
-- Output: `data/states/`
-- Description: Uses the `VAL` binary to validate the generated plans. It parses the verbose output of VAL to reconstruct the exact state (set of true predicates) at every time step of the plan.
-- Command from the root directory (alternatively see the `data_gen.sh` file at the root):
-  ```bash
-  uv run python -m code.data-processing.generate_states --workers 120
-  ```
+### 3. Unified Execution
 
-### Step 3: Graph Embedding Generation
+The `2_unified_train_eval.slurm` script in the root directory acts as a dispatcher. It automatically organizes outputs into the following hierarchy:
 
-Script: `code/encoding-generation/generate_graph_embeddings.py`
+```text
+checkpoints/
+└── <encoding>/          # e.g., "graphs"
+    ├── lstm_state/      # Model + Mode
+    ├── lstm_delta/
+    ├── xgboost_state/
+    └── xgboost_delta/
+```
 
-- Input: `data/states/` (Trajectories) and `data/pddl/` (Goals)
-- Output: `data/encodings/graphs/`
-- Description: Converts PDDL states and goals into **Instance Learning Graphs (ILG)** and applies the **Weisfeiler-Leman (WL)** algorithm to extract fixed-size feature vectors.
-- Logic:
-  1.  Phase 1 (Collection): Iterates over the `train` split (both trajectories and goals). Builds a global hash map (vocabulary) of graph substructures.
-  2.  Phase 2 (Embedding): Freezes the vocabulary and processes `train`, `validation`, and `test` splits. Converts graphs into NumPy arrays using the frozen hash map.
-- Command from the root directory (alternatively see the `embeddings.sh` file at the root):
-  ```bash
-  # Note: This script runs sequentially to ensure hash map stability in C++ bindings
-  uv run python -m code.encoding-generation.generate_graph_embeddings --iterations 2
-  ```
+## Data Processing Pipeline (`code/data-processing/`)
 
-## Dependencies
+1.  **Plan Generation**: `generate_plans.py` runs Fast Downward.
+2.  **State Generation**: `generate_states.py` runs VAL to create `.traj` files.
+3.  **Graph Embedding**: `generate_graph_embeddings.py` runs Weisfeiler-Leman to create `.npy` vectors.
 
-- Python Packages:
-  - `pddlpy`: For parsing PDDL structures.
-  - `wlplan`: For graph generation and WL kernel hashing.
-  - `numpy`: For vector storage.
-  - `tqdm`: For progress bars.
-- External Binaries:
-  - `fast-downward`: Required for Step 1.
-  - `VAL` (Validate): Required for Step 2.
+## Arguments & Flags
 
-## Key Implementation Details
+Common arguments for training scripts:
 
-- Lowercase Normalization: PDDL is case-insensitive, but Python strings are not. The pipeline normalizes all predicates to lowercase to ensure `(ON A B)` matches `(on a b)`. _See the `code/data-processing/utils/lowercase_pddl.py` file and it run in the `data_gen.sh` file at the root._
-- Closed World Assumption: The `.traj` files only list _true_ predicates. Any predicate defined in the domain but missing from a line in the `.traj` file is implicitly false.
-- Goal Parsing: The embedding script explicitly parses the `:goal` section of the PDDL files to create `_goal.npy` files. This allows downstream models to be conditioned on the target state.
+- `--domain`: The PDDL domain name (e.g., `blocks`).
+- `--delta`: **Crucial**. If set, the model learns physics residuals ($S_{t+1} - S_t$). If unset, it learns to reconstruct the entire state.
+- `--save_dir`: Where to save checkpoints.
+
+Common arguments for inference scripts:
+
+- `--beam_width`: Width of the latent beam search (default: 2 or 3).
+- `--max_steps`: Maximum plan length before aborting.

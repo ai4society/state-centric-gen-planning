@@ -149,7 +149,7 @@ def main():
             if not os.path.exists(split_state_dir):
                 continue
 
-            traj_files = [f for f in os.listdir(split_state_dir) if f.endswith(".traj")]
+            traj_files = sorted([f for f in os.listdir(split_state_dir) if f.endswith(".traj")])
 
             for t_file in tqdm(traj_files, desc=f"Embedding {split}"):
                 prob_name = t_file.replace(".traj", "")

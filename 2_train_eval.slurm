@@ -27,6 +27,13 @@ TARGET_MODES=("state" "delta")
 # Currently only "graphs" is implemented...
 ENCODING="graphs"
 
+# 4. Hyperparameters (override via env: EPOCHS=100 sbatch ...)
+EPOCHS=${EPOCHS:-250}
+BATCH_SIZE=${BATCH_SIZE:-32}
+HIDDEN_DIM=${HIDDEN_DIM:-256}
+LR=${LR:-1e-2}
+MAX_DEPTH=${MAX_DEPTH:-8}
+
 # SETUP
 echo "Job started on $(hostname) at $(date)"
 echo "SLURM_ARRAY_TASK_ID = $SLURM_ARRAY_TASK_ID"
@@ -55,6 +62,10 @@ echo " Encoding:  $ENCODING"
 echo " Models:    $TARGET_MODELS"
 echo " Modes:     ${TARGET_MODES[*]}"
 echo " Data Dir:  $DATA_DIR"
+echo " Epochs:    $EPOCHS"
+echo " Batch Sz:  $BATCH_SIZE"
+echo " HiddenDim: $HIDDEN_DIM"
+echo " LR:        $LR"
 
 # EXECUTION LOOP
 for MODEL in $TARGET_MODELS; do
@@ -92,6 +103,10 @@ for MODEL in $TARGET_MODELS; do
                 --domain "$DOMAIN" \
                 --data_dir "$DATA_DIR" \
                 --save_dir "$CHECKPOINT_DIR" \
+                --epochs "$EPOCHS" \
+                --batch_size "$BATCH_SIZE" \
+                --hidden_dim "$HIDDEN_DIM" \
+                --lr "$LR" \
                 $DELTA_FLAG
 
             # LSTM INFERENCE
@@ -102,6 +117,7 @@ for MODEL in $TARGET_MODELS; do
                     --domain "$DOMAIN" \
                     --checkpoint "$BEST_PT" \
                     --results_dir "$RESULTS_DIR" \
+                    --hidden_dim "$HIDDEN_DIM" \
                     $DELTA_FLAG \
                     --tag "$MODE"
             else
@@ -116,6 +132,9 @@ for MODEL in $TARGET_MODELS; do
                 --domain "$DOMAIN" \
                 --save_dir "$CHECKPOINT_DIR" \
                 --data_dir "$DATA_DIR" \
+                --n_estimators "$EPOCHS" \
+                --max_depth "$MAX_DEPTH" \
+                --lr "$LR" \
                 $DELTA_FLAG
 
             # XGBOOST INFERENCE

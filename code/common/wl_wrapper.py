@@ -172,14 +172,14 @@ class WLEncoder:
 
         visit(problem.goal)
 
-        return list(objects), goals
+        return sorted(list(objects)), goals
 
     def collect_vocabulary(self, train_states_dir):
         print(f"  [GC-WL] Collecting vocabulary from {train_states_dir}...")
         self.vocab = {}
         unique_hashes = set()
 
-        train_files = glob.glob(os.path.join(train_states_dir, "*.traj"))
+        train_files = sorted(glob.glob(os.path.join(train_states_dir, "*.traj")))
         pddl_train_dir = train_states_dir.replace("states", "pddl")
 
         for traj_file in tqdm(train_files, desc="  Parsing Traces"):

@@ -21,9 +21,17 @@ def set_seed(seed: int):
     # Ensure deterministic behavior in CuDNN
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    
+    # Enforce strict deterministic algorithms
+    # Note: This might throw errors if an operation doesn't have a deterministic implementation,
+    # but for LSTM/Linear it is supported.
+    torch.use_deterministic_algorithms(True)
 
-    # Set Python hash seed for dictionary iteration consistency
+    # Set Python hash seed
     os.environ["PYTHONHASHSEED"] = str(seed)
+    
+    # Set CUBLAS workspace config for deterministic LSTM on CUDA >= 10.2
+    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 
     print(f"Global seed set to: {seed}")
 
@@ -46,12 +54,14 @@ def validate_plan(domain_path, problem_path, plan_actions, val_path):
     """
     # 0. Pre-checks
     if not plan_actions:
+        print("Empty plan provided for validation.")
         return False, False
 
     val_bin = Path(val_path)
 
     # Check existence and permissions of VAL binary
     if not val_bin.exists() or not os.access(val_bin, os.X_OK):
+        print(f"VAL binary not found or not executable at: {val_path}")
         return False, False
 
     # Ensure domain/prob paths are absolute
@@ -95,7 +105,8 @@ def validate_plan(domain_path, problem_path, plan_actions, val_path):
         is_solved = "Plan valid" in output
         is_executable = is_solved or "Plan executed successfully" in output
 
-    except Exception:
+    except Exception as e:
+        print(f"Error running VAL: {e}")
         is_solved = False
         is_executable = False
 

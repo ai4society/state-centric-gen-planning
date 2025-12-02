@@ -6,6 +6,7 @@ own/
 slurm-out/
 packages/
 code/plansformer/
+checkpoints/graphs/xgboost_*/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

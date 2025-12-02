@@ -59,7 +59,7 @@ def solve_problem(domain_path, problem_path, plan_output_path):
             subprocess.run(
                 cmd_base,
                 cwd=tmp_dir,
-                stdout=subprocess.PIPE, 
+                stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 check=True,
                 text=True,

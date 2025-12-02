@@ -58,6 +58,7 @@ def solve_problem(
     """
     Runs Latent Space Search using Beam Search (XGBoost version).
     """
+    print(f"Inference using {'Delta Prediction' if delta else 'State Prediction'} for {prob_file}")
     # 1. Pyperplan Parsing
     try:
         parser = Parser(domain_path, prob_path)
@@ -127,6 +128,9 @@ def solve_problem(
             if not successors:
                 continue
 
+            # Sort successors by name to ensure processing order is deterministic
+            successors.sort(key=lambda x: x[0])
+
             # C. Score Successors
             for op_name, next_atoms in successors:
                 next_hash = frozenset(next_atoms)
@@ -165,7 +169,10 @@ def solve_problem(
             if not candidates:
                 break
 
-            candidates.sort(key=lambda x: x[0])
+            # Stable Sort:
+            # Primary Key: Score (float)
+            # Secondary Key: String representation of the plan (deterministic tie-breaker)
+            candidates.sort(key=lambda x: (x[0], str(x[4])))
             beam = candidates[:beam_width]
 
     best_attempt = beam[0] if beam else (0, None, None, [], set())
@@ -180,6 +187,9 @@ def solve_problem(
 
 def run_inference(args):
     set_seed(args.seed)
+
+    device = "cuda" if cuda.is_available() else "cpu"
+    print(f"Using device: {device}")
 
     # 1. Load WL Generator
     model_path = os.path.join(
@@ -201,9 +211,6 @@ def run_inference(args):
     xgb_path = os.path.join(args.checkpoint_dir, f"{args.domain}_xgb.json")
     print(f"Loading XGBoost from {xgb_path}...")
 
-    # Check for GPU
-    device = "cuda" if cuda.is_available() else "cpu"
-
     model = xgb.XGBRegressor(device=device)
     model.load_model(xgb_path)
 
@@ -221,6 +228,7 @@ def run_inference(args):
         solved_count = 0
         executable_count = 0
         prob_files = sorted([f for f in os.listdir(split_dir) if f.endswith(".pddl")])
+        print(f" Found {len(prob_files)} problems for {split}")
 
         for prob_file in tqdm(prob_files, desc=f"Solving {split}"):
             prob_path = os.path.join(split_dir, prob_file)
@@ -238,7 +246,8 @@ def run_inference(args):
                     beam_width=args.beam_width,
                 )
 
-                # Validate
+                # Validate Plan with VAL (External Verification)
+                print(" Validating plan with VAL...")
                 is_solved, is_executable = validate_plan(
                     domain_path=domain_pddl,
                     problem_path=prob_path,
@@ -262,8 +271,12 @@ def run_inference(args):
                 results.append({"problem": prob_file, "solved": False, "error": str(e)})
 
         total = len(prob_files)
-        acc = solved_count / total if total else 0
-        print(f"Result {split}: Solved {solved_count}/{total} ({acc:.2%})")
+        accuracy = solved_count / total if total else 0
+        exec_rate = executable_count / total if total else 0
+
+        print(
+            f"Result {split}: Solved {solved_count}/{total} ({accuracy:.2%}) | Executable {executable_count}/{total} ({exec_rate:.2%})"
+        )
 
         # Save
         os.makedirs(args.results_dir, exist_ok=True)
@@ -273,6 +286,7 @@ def run_inference(args):
         )
         with open(out_file, "w") as f:
             json.dump(results, f, indent=2)
+        print(f"Saved results to {out_file}")
 
 
 if __name__ == "__main__":
@@ -283,13 +297,17 @@ if __name__ == "__main__":
     parser.add_argument("--data_dir", default="data")
     parser.add_argument("--results_dir", default="results")
     parser.add_argument("--max_steps", type=int, default=100)
-    parser.add_argument("--beam_width", type=int, default=2)
+    parser.add_argument("--beam_width", type=int, default=3, help="Search beam width")
     parser.add_argument("--delta", action="store_true")
     parser.add_argument("--tag", default="state")
     parser.add_argument("--seed", type=int, default=13)
+
+    HOME = os.path.expanduser("~")
+    ROOT_DIR = f"{HOME}/planning/"
     parser.add_argument(
         "--val_path",
-        default=os.environ.get("VAL_PATH", "VAL/bin/Validate"),
+        default=os.environ.get("VAL_PATH", f"{ROOT_DIR}VAL/bin/Validate"),
+        help="Path to VAL binary",
     )
 
     args = parser.parse_args()

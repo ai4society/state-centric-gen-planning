@@ -153,6 +153,9 @@ def solve_problem(
             # debugging
             # print(f"\nStep {len(plan)} | Current Best Score: {score:.4f}")
 
+            # Sort successors by name to ensure processing order is deterministic
+            successors.sort(key=lambda x: x[0])
+
             # C. Score Successors
             for op_name, next_atoms in successors:
                 # 1. Cycle Detection
@@ -205,11 +208,11 @@ def solve_problem(
             if not candidates:
                 break  # All paths led to dead ends
 
-            # Sort by score (ascending) and take top K
-            # Note: We rely on Python's stable sort.
-            # Tensors/Sets are not comparable, so we might need a wrapper if scores are identical.
-            # But floats rarely collide exactly.
-            candidates.sort(key=lambda x: x[0])
+            # Stable Sort:
+            # Primary Key: Score (float)
+            # Secondary Key: String representation of the plan (deterministic tie-breaker)
+            candidates.sort(key=lambda x: (x[0], str(x[4])))
+
             beam = candidates[:beam_width]
 
     # If we exit loop, we failed to find goal within max_steps
@@ -351,7 +354,7 @@ if __name__ == "__main__":
     parser.add_argument("--results_dir", default="results")
     parser.add_argument("--hidden_dim", type=int, default=256)
     parser.add_argument("--max_steps", type=int, default=100)
-    parser.add_argument("--beam_width", type=int, default=2, help="Search beam width")
+    parser.add_argument("--beam_width", type=int, default=3, help="Search beam width")
     parser.add_argument(
         "--delta",
         action="store_true",
@@ -364,9 +367,11 @@ if __name__ == "__main__":
     )
     parser.add_argument("--seed", type=int, default=13, help="Random seed")
 
+    HOME = os.path.expanduser("~")
+    ROOT_DIR = f"{HOME}/planning/"
     parser.add_argument(
         "--val_path",
-        default=os.environ.get("VAL_PATH", "VAL/bin/Validate"),
+        default=os.environ.get("VAL_PATH", f"{ROOT_DIR}VAL/bin/Validate"),
         help="Path to VAL binary",
     )
 

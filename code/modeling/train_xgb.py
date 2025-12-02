@@ -39,12 +39,17 @@ def train(args):
     device = "cuda" if cuda.is_available() else "cpu"
     print(f"Training on device: {device}")
 
+    print("Configured hyperparameters:")
+    print(f"  Boosting rounds (n_estimators): {args.n_estimators}\n")
+    print(f"  Tree depth (max_depth): {args.max_depth}")
+    print(f"  Learning rate: {args.lr}")
+
     # XGBRegressor automatically handles Multi-Output regression
     # if y is 2D and objective is squarederror.
     model = xgb.XGBRegressor(
         n_estimators=args.n_estimators,
-        learning_rate=args.lr,
         max_depth=args.max_depth,
+        learning_rate=args.lr,
         tree_method="hist",  # Required for efficient training
         device=device,  # GPU support
         objective="reg:squarederror",
@@ -74,6 +79,9 @@ def train(args):
         "input_dim": X_train.shape[1],
         "output_dim": y_train.shape[1],
         "delta": args.delta,
+        "n_estimators": args.n_estimators,
+        "max_depth": args.max_depth,
+        "learning_rate": args.lr,
     }
     with open(os.path.join(args.save_dir, f"{args.domain}_xgb_meta.pkl"), "wb") as f:
         pickle.dump(meta, f)
@@ -89,7 +97,6 @@ if __name__ == "__main__":
     parser.add_argument("--n_estimators", type=int, default=1000)
     parser.add_argument("--max_depth", type=int, default=8)
     parser.add_argument("--lr", type=float, default=0.1)
-
     parser.add_argument(
         "--delta",
         action="store_true",

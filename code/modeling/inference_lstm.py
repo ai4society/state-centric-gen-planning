@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+from code.common.fsf_wrapper import FSFEncoder
 from code.common.utils import set_seed, validate_plan
 from code.modeling.models import StateCentricLSTM, StateCentricLSTM_Delta
 
@@ -213,9 +214,25 @@ def run_inference(args):
 
     # Load Encoder
     if args.encoding == "fsf":
+        # 1. Load Config
+        config_path = os.path.join(
+            args.data_dir, "encodings", "models", f"{args.domain}_fsf_config.json"
+        )
+        if not os.path.exists(config_path):
+            print(f"Error: FSF Config not found at {config_path}")
+            return
+
+        with open(config_path, "r") as f:
+            config = json.load(f)
+            max_objects = config["max_objects"]
+
+        # 2. Init Encoder
         domain_pddl = os.path.join(args.pddl_dir, args.domain, "domain.pddl")
-        feature_gen = FSFEncoder(args.domain, domain_pddl)
-        input_dim = feature_gen.max_objects
+        feature_gen = FSFEncoder(args.domain, domain_pddl, max_objects)
+
+        # 3. Set Input Dim (Max Objects + 1 Global)
+        input_dim = feature_gen.vector_size
+        print(f"FSF Input Dimension: {input_dim}")
     else:
         model_path = os.path.join(
             args.data_dir, "encodings", "models", f"{args.domain}_wl.json"

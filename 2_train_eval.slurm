@@ -15,19 +15,16 @@
 
 # CONFIGURATION
 
-# 1. Which Models to run? (Space separated: "lstm" "xgboost" "llama")
+# 1. Which Models and Encodings to run? (Space separated: "lstm" "xgboost" "llama")
 # Can override this by passing arguments to sbatch, e.g.:
 # `sbatch script.slurm "lstm"`
 TARGET_MODELS=${1:-"lstm xgboost"}
+ENCODING=${2:-"graphs"} # "graphs" or "fsf"
 
 # 2. Which Modes? ("state" "delta")
 TARGET_MODES=("state" "delta")
 
-# 3. Which Encoding? (Folder name inside data/encodings/)
-# Currently only "graphs" is implemented...
-ENCODING="graphs"
-
-# 4. Hyperparameters (override via env: EPOCHS=100 sbatch ...)
+# 3. Hyperparameters (override via env: EPOCHS=100 sbatch ...)
 EPOCHS=${EPOCHS:-250}
 BATCH_SIZE=${BATCH_SIZE:-32}
 HIDDEN_DIM=${HIDDEN_DIM:-256}
@@ -54,7 +51,7 @@ if [ -z "$DOMAIN" ]; then
     exit 1
 fi
 
-DATA_DIR="data/encodings/${ENCODING}"
+DATA_DIR="data/encodings/$ENCODING"
 
 echo " CONFIGURATION SUMMARY"
 echo " Domain:    $DOMAIN"
@@ -66,6 +63,12 @@ echo " Epochs:    $EPOCHS"
 echo " Batch Sz:  $BATCH_SIZE"
 echo " HiddenDim: $HIDDEN_DIM"
 echo " LR:        $LR"
+
+# If FSF, ensure data exists (Quick check/generation)
+if [ "$ENCODING" == "fsf" ]; then
+    echo "Ensuring FSF embeddings exist for $DOMAIN..."
+    uv run python -m code.encoding-generation.generate_fsf_embeddings --domain "$DOMAIN"
+fi
 
 # EXECUTION LOOP
 for MODEL in $TARGET_MODELS; do
@@ -116,6 +119,7 @@ for MODEL in $TARGET_MODELS; do
                 uv run python -m code.modeling.inference_lstm \
                     --domain "$DOMAIN" \
                     --checkpoint "$BEST_PT" \
+                    --encoding "$ENCODING" \
                     --results_dir "$RESULTS_DIR" \
                     --hidden_dim "$HIDDEN_DIM" \
                     $DELTA_FLAG \

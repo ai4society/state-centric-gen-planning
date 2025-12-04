@@ -274,8 +274,8 @@ def train(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--domain", required=True, help="Domain name (e.g., blocks)")
-    parser.add_argument("--data_dir", default="data/encodings/graphs")
-    parser.add_argument("--save_dir", default="checkpoints")
+    parser.add_argument("--data_dir", required=True, help="Directory containing trajectory data")
+    parser.add_argument("--save_dir", required=True, help="Directory to save models and logs")
     parser.add_argument("--epochs", type=int, default=250)
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--hidden_dim", type=int, default=256)

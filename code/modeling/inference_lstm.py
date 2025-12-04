@@ -31,14 +31,16 @@ def get_fsf_tensor(atoms_set, encoder, objects, obj_map, device):
     return torch.tensor(vec).float().to(device).unsqueeze(0).unsqueeze(0)
 
 
-def solve_problem(args, prob_file, model, device, encoder_type, feature_gen_or_encoder):
+def solve_problem(
+    args, split, prob_file, model, device, encoder_type, feature_gen_or_encoder
+):
     """Unified Solver for WL and FSF"""
     print(
         f"Inference using {'Delta Prediction' if args.delta else 'State Prediction'} for {prob_file}"
     )
 
     domain_path = os.path.join(args.pddl_dir, args.domain, "domain.pddl")
-    prob_path = os.path.join(args.pddl_dir, args.domain, args.split, prob_file)
+    prob_path = os.path.join(args.pddl_dir, args.domain, split, prob_file)
 
     # 1. Pyperplan Parsing (for successors)
     try:
@@ -289,7 +291,7 @@ def run_inference(args):
             try:
                 # Generate Plan
                 res = solve_problem(
-                    args, prob_file, model, device, args.encoding, feature_gen
+                    args, split, prob_file, model, device, args.encoding, feature_gen
                 )
 
                 # Validate Plan with VAL

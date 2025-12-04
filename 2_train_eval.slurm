@@ -64,11 +64,11 @@ echo " Batch Sz:  $BATCH_SIZE"
 echo " HiddenDim: $HIDDEN_DIM"
 echo " LR:        $LR"
 
-# If FSF, ensure data exists (Quick check/generation)
-if [ "$ENCODING" == "fsf" ]; then
-    echo "Ensuring FSF embeddings exist for $DOMAIN..."
-    uv run python -m code.encoding-generation.generate_fsf_embeddings --domain "$DOMAIN"
-fi
+# # If FSF, ensure data exists (Quick check/generation)
+# if [ "$ENCODING" == "fsf" ]; then
+#     echo "Ensuring FSF embeddings exist for $DOMAIN..."
+#     uv run python -m code.encoding-generation.generate_fsf_embeddings --domain "$DOMAIN"
+# fi
 
 # EXECUTION LOOP
 for MODEL in $TARGET_MODELS; do

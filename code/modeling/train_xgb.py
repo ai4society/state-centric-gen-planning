@@ -12,13 +12,20 @@ from torch import cuda
 def train(args):
     set_seed(args.seed)
     print(
-        f"Training XGBoost using {'Delta Prediction' if args.delta else 'State Prediction'}"
+        f"Training XGBoost using {'Delta Prediction' if args.delta else 'State Prediction'} with [{args.encoding}] encoding."
     )
 
+    # Adjust data directory based on encoding
+    # If args.data_dir is default (data/encodings/graphs), switch it if encoding is fsf
+    if args.encoding == "fsf" and "graphs" in args.data_dir:
+        args.data_dir = args.data_dir.replace("graphs", "fsf")
+
+    # Construct save directory structure: checkpoints/<encoding>/xgboost_<mode>/
+    # (Or rely on the user providing the correct --save_dir from the SLURM script)
     os.makedirs(args.save_dir, exist_ok=True)
 
     # 1. Load Data
-    print(f"Loading datasets for {args.domain}...")
+    print(f"Loading datasets for {args.domain} from {args.data_dir}...")
     X_train, y_train = load_flat_dataset_for_xgboost(
         args.data_dir, args.domain, "train", delta=args.delta
     )
@@ -79,6 +86,7 @@ def train(args):
         "input_dim": X_train.shape[1],
         "output_dim": y_train.shape[1],
         "delta": args.delta,
+        "encoding": args.encoding,
         "n_estimators": args.n_estimators,
         "max_depth": args.max_depth,
         "learning_rate": args.lr,
@@ -92,6 +100,12 @@ if __name__ == "__main__":
     parser.add_argument("--domain", required=True, help="Domain name")
     parser.add_argument("--save_dir", required=True, help="Directory to save model")
     parser.add_argument("--data_dir", default="data/encodings/graphs")
+    parser.add_argument(
+        "--encoding",
+        required=True,
+        choices=["graphs", "fsf"],
+        help="Encoding strategy used",
+    )
 
     # XGB Hyperparams
     parser.add_argument("--n_estimators", type=int, default=1000)

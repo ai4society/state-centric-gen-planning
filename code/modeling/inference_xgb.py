@@ -1,6 +1,8 @@
 import argparse
 import json
 import os
+import pickle
+from code.common.fsf_wrapper import FSFEncoder
 from code.common.utils import set_seed, validate_plan
 
 import numpy as np
@@ -10,14 +12,16 @@ from pyperplan.pddl.parser import Parser
 from scipy.spatial.distance import cosine, euclidean
 from torch import cuda
 from tqdm import tqdm
+
+# WL Imports
 from wlplan.data import DomainDataset, ProblemDataset
 from wlplan.feature_generator import load_feature_generator
 from wlplan.planning import Atom, State, parse_domain, parse_problem
 
 
-def embed_state_to_numpy(atoms_set, feature_gen, wl_domain, wl_prob, pred_map):
+def embed_state_wl(atoms_set, feature_gen, wl_domain, wl_prob, pred_map):
     """
-    Helper to convert a set of atoms (strings) into a Numpy Array [1, D].
+    Helper to convert a set of atoms (strings) into a Numpy Array [1, D] using WL.
     """
     # 1. Convert Strings to WL Atoms
     wl_atoms = []
@@ -43,23 +47,47 @@ def embed_state_to_numpy(atoms_set, feature_gen, wl_domain, wl_prob, pred_map):
     return vec_raw.reshape(1, -1)
 
 
+def embed_state_fsf(atoms_set, encoder, objects, obj_map):
+    """
+    Helper to convert a set of atoms (strings) into a Numpy Array [1, D] using FSF.
+    """
+    # Convert set of strings to list of tuples: "(on a b)" -> ("on", "a", "b")
+    atom_tuples = []
+    for a in atoms_set:
+        content = a.replace("(", "").replace(")", "").lower()
+        parts = content.split()
+        if parts:
+            atom_tuples.append(tuple(parts))
+
+    # Use the encoder's internal logic
+    vec = encoder._state_to_vector(atom_tuples, objects, obj_map)
+
+    # Return [1, D]
+    return vec.reshape(1, -1)
+
+
 def solve_problem(
     prob_file,
     domain_path,
     prob_path,
-    feature_gen,
     model,
     max_steps,
-    wl_domain,
-    pred_map,
     delta,
+    encoding_type,
+    feature_encoder=None,  # WL Generator or FSFEncoder
+    wl_domain=None,
+    pred_map=None,
     beam_width=3,
 ):
     """
     Runs Latent Space Search using Beam Search (XGBoost version).
+    Supports both WL and FSF encodings.
     """
-    print(f"Inference using {'Delta Prediction' if delta else 'State Prediction'} for {prob_file}")
-    # 1. Pyperplan Parsing
+    print(
+        f"Inference using {'Delta Prediction' if delta else 'State Prediction'} for {prob_file}"
+    )
+
+    # 1. Pyperplan Parsing (Ground Truth Physics)
     try:
         parser = Parser(domain_path, prob_path)
         dom = parser.parse_domain()
@@ -69,29 +97,45 @@ def solve_problem(
         print(f"Pyperplan Parsing Error on {prob_file}: {e}")
         raise e
 
-    # 2. WLPlan Context
-    wl_prob = parse_problem(domain_path, prob_path)
-
-    # 3. Embed Goal
-    goal_atoms = list(wl_prob.positive_goals)
-    goal_state = State(goal_atoms)
-    goal_ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [goal_state])])
-    goal_embs = feature_gen.embed(goal_ds)
-    goal_vec = np.array(goal_embs[0], dtype=np.float32).reshape(1, -1)  # [1, D]
-
-    # 4. Initialize Beam
     initial_atoms = task.initial_state
     goal_set = set(task.goals)
 
-    # Embed Initial State
-    init_vec = embed_state_to_numpy(
-        initial_atoms, feature_gen, wl_domain, wl_prob, pred_map
-    )
+    # 2. Embedding Setup (Goal & Init)
+    if encoding_type == "fsf":
+        # FSF Setup
+        encoder = feature_encoder
+        # FSF requires problem-specific object mapping
+        objects = encoder._get_sorted_objects(prob_path)
+        obj_map = encoder._get_object_indices(objects)
 
+        # Embed Goal
+        goal_vec_1d = encoder.embed_goal(prob_path)
+        goal_vec = goal_vec_1d.reshape(1, -1)  # [1, D]
+
+        # Embed Init
+        init_vec = embed_state_fsf(initial_atoms, encoder, objects, obj_map)
+    else:
+        # WL Setup
+        feature_gen = feature_encoder
+        wl_prob = parse_problem(domain_path, prob_path)
+
+        # Embed Goal
+        goal_atoms = list(wl_prob.positive_goals)
+        goal_state = State(goal_atoms)
+        goal_ds = DomainDataset(wl_domain, [ProblemDataset(wl_prob, [goal_state])])
+        goal_embs = feature_gen.embed(goal_ds)
+        goal_vec = np.array(goal_embs[0], dtype=np.float32).reshape(1, -1)
+
+        # Embed Init
+        init_vec = embed_state_wl(
+            initial_atoms, feature_gen, wl_domain, wl_prob, pred_map
+        )
+
+    # 3. Initialize Beam
     # Beam Element: (score, current_vec, atoms, plan, visited_hashes)
     # Note: XGBoost is stateless (no hidden state), unlike LSTM.
     initial_hash = frozenset(initial_atoms)
-    beam = [(0.0, init_vec, initial_atoms, [], {initial_hash})]
+    beam = [(0.0, init_vec, initial_atoms, [], {})]
 
     for _ in range(max_steps):
         candidates = []
@@ -112,6 +156,9 @@ def solve_problem(
 
             # Predict
             pred = model.predict(model_input)  # [1, D]
+
+            # Ensure 2D shape for addition
+            pred = pred.reshape(1, -1)
 
             if delta:
                 pred_next_emb = current_vec + pred
@@ -137,9 +184,13 @@ def solve_problem(
                 if next_hash in visited:
                     continue
 
-                cand_vec = embed_state_to_numpy(
-                    next_atoms, feature_gen, wl_domain, wl_prob, pred_map
-                )
+                # Embed Candidate
+                if encoding_type == "fsf":
+                    cand_vec = embed_state_fsf(next_atoms, encoder, objects, obj_map)
+                else:
+                    cand_vec = embed_state_wl(
+                        next_atoms, feature_gen, wl_domain, wl_prob, pred_map
+                    )
 
                 # Distance Calculation
                 # Flatten for scipy
@@ -172,7 +223,7 @@ def solve_problem(
             # Stable Sort:
             # Primary Key: Score (float)
             # Secondary Key: String representation of the plan (deterministic tie-breaker)
-            candidates.sort(key=lambda x: (x[0], str(x[4])))
+            candidates.sort(key=lambda x: (x[0], str(x[3])))
             beam = candidates[:beam_width]
 
     best_attempt = beam[0] if beam else (0, None, None, [], set())
@@ -191,23 +242,58 @@ def run_inference(args):
     device = "cuda" if cuda.is_available() else "cpu"
     print(f"Using device: {device}")
 
-    # 1. Load WL Generator
-    model_path = os.path.join(
-        args.data_dir, "encodings", "models", f"{args.domain}_wl.json"
-    )
-    if not os.path.exists(model_path):
-        print(f"Error: WL Model not found at {model_path}")
+    # 0. Load Metadata to determine encoding
+    meta_path = os.path.join(args.checkpoint_dir, f"{args.domain}_xgb_meta.pkl")
+    if not os.path.exists(meta_path):
+        print(f"Error: Metadata not found at {meta_path}. Cannot determine encoding.")
         return
 
-    print(f"Loading WL Model from {model_path}...")
-    feature_gen = load_feature_generator(model_path)
+    with open(meta_path, "rb") as f:
+        meta = pickle.load(f)
 
-    # 2. Load Domain
-    domain_pddl = os.path.join(args.pddl_dir, args.domain, "domain.pddl")
-    wl_domain = parse_domain(domain_pddl)
-    pred_map = {p.name: p for p in wl_domain.predicates}
+    encoding_type = meta.get("encoding", "graphs")  # Default to graphs if missing
+    print(f"Detected Encoding: {encoding_type}")
 
-    # 3. Load XGBoost
+    # 1. Load Encoders
+    feature_encoder = None
+    wl_domain = None
+    pred_map = None
+
+    if encoding_type == "fsf":
+        # Load FSF Config
+        config_path = os.path.join(
+            args.data_dir, "encodings", "models", f"{args.domain}_fsf_config.json"
+        )
+        if not os.path.exists(config_path):
+            print(f"Error: FSF Config not found at {config_path}")
+            return
+
+        with open(config_path, "r") as f:
+            config = json.load(f)
+            max_objects = config["max_objects"]
+
+        domain_pddl = os.path.join(args.pddl_dir, args.domain, "domain.pddl")
+        feature_encoder = FSFEncoder(args.domain, domain_pddl, max_objects)
+        print(f"Initialized FSF Encoder with Max Objects: {max_objects}")
+
+    else:
+        # Load WL Generator
+        model_path = os.path.join(
+            args.data_dir, "encodings", "models", f"{args.domain}_wl.json"
+        )
+        if not os.path.exists(model_path):
+            print(f"Error: WL Model not found at {model_path}")
+            return
+
+        print(f"Loading WL Model from {model_path}...")
+        feature_encoder = load_feature_generator(model_path)
+
+        # Load Domain for WL parsing
+        domain_pddl = os.path.join(args.pddl_dir, args.domain, "domain.pddl")
+        wl_domain = parse_domain(domain_pddl)
+        pred_map = {p.name: p for p in wl_domain.predicates}
+
+    # 2. Load XGBoost
     xgb_path = os.path.join(args.checkpoint_dir, f"{args.domain}_xgb.json")
     print(f"Loading XGBoost from {xgb_path}...")
 
@@ -218,7 +304,7 @@ def run_inference(args):
     splits = ["validation", "test-interpolation", "test-extrapolation"]
 
     for split in splits:
-        print(f"\n=== Testing on {split} ===")
+        print(f"\n*** Testing on {split} ***")
         split_dir = os.path.join(args.pddl_dir, args.domain, split)
         if not os.path.exists(split_dir):
             print(f"Skipping {split} (not found)")
@@ -237,12 +323,13 @@ def run_inference(args):
                     prob_file=prob_file,
                     domain_path=domain_pddl,
                     prob_path=prob_path,
-                    feature_gen=feature_gen,
                     model=model,
                     max_steps=args.max_steps,
+                    delta=args.delta,
+                    encoding_type=encoding_type,
+                    feature_encoder=feature_encoder,
                     wl_domain=wl_domain,
                     pred_map=pred_map,
-                    delta=args.delta,
                     beam_width=args.beam_width,
                 )
 
@@ -282,7 +369,8 @@ def run_inference(args):
         os.makedirs(args.results_dir, exist_ok=True)
         tag_suffix = f"_{args.tag}" if getattr(args, "tag", "") else ""
         out_file = os.path.join(
-            args.results_dir, f"{args.domain}_{split}{tag_suffix}_results.json"
+            args.results_dir,
+            f"{args.domain}_{encoding_type}_{split}{tag_suffix}_results.json",
         )
         with open(out_file, "w") as f:
             json.dump(results, f, indent=2)
@@ -293,9 +381,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--domain", required=True)
     parser.add_argument("--checkpoint_dir", required=True)
+    parser.add_argument("--results_dir", required=True)
     parser.add_argument("--pddl_dir", default="data/pddl")
     parser.add_argument("--data_dir", default="data")
-    parser.add_argument("--results_dir", default="results")
     parser.add_argument("--max_steps", type=int, default=100)
     parser.add_argument("--beam_width", type=int, default=3, help="Search beam width")
     parser.add_argument("--delta", action="store_true")

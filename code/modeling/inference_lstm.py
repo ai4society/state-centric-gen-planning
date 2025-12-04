@@ -242,24 +242,6 @@ def run_inference(args):
         feature_gen = load_feature_generator(model_path)
         input_dim = feature_gen.get_n_features()
 
-    # # 1. Load WL Generator
-    # model_path = os.path.join(
-    #     args.data_dir, "encodings", "models", f"{args.domain}_wl.json"
-    # )
-    # if not os.path.exists(model_path):
-    #     print(f"Error: WL Model not found at {model_path}")
-    #     return
-
-    # print(f"Loading WL Model from {model_path}...")
-    # feature_gen = load_feature_generator(model_path)
-    # input_dim = feature_gen.get_n_features()
-    # print(f"Feature Dimension: {input_dim}")
-
-    # # 2. Load Domain (for parsing)
-    # domain_pddl = os.path.join(args.pddl_dir, args.domain, "domain.pddl")
-    # wl_domain = parse_domain(domain_pddl)
-    # pred_map = {p.name: p for p in wl_domain.predicates}
-
     # Load Model
     print(f"Loading LSTM from {args.checkpoint}...")
     if args.delta:
@@ -287,7 +269,6 @@ def run_inference(args):
         print(f" Found {len(prob_files)} problems for {split}")
 
         for prob_file in tqdm(prob_files, desc=f"Solving {split}"):
-            prob_path = os.path.join(split_dir, prob_file)
             try:
                 # Generate Plan
                 res = solve_problem(
@@ -350,9 +331,9 @@ if __name__ == "__main__":
     parser.add_argument("--domain", required=True)
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--encoding", required=True, choices=["graphs", "fsf"])
+    parser.add_argument("--results_dir", required=True)
     parser.add_argument("--pddl_dir", default="data/pddl")
     parser.add_argument("--data_dir", default="data")
-    parser.add_argument("--results_dir", default="results")
     parser.add_argument("--hidden_dim", type=int, default=256)
     parser.add_argument("--max_steps", type=int, default=100)
     parser.add_argument("--beam_width", type=int, default=3, help="Search beam width")

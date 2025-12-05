@@ -4,22 +4,19 @@
 #SBATCH --error=slurm-out/%x_%j.err
 #SBATCH --mail-user=jaaydin@email.sc.edu
 #SBATCH --mail-type=ALL
-#SBATCH --partition=gpu-debug
-#SBATCH --time=00:10:00
+#SBATCH --partition=ai
+#SBATCH --time=00:30:00
 #SBATCH --gres=gpu:1
-
-echo "Job started on $(hostname) at $(date)"
-
+#SBATCH --account=nairr250014-ai
+echo "Job started on $(hostname) for job $SLURM_JOB_NAME"
 # Load env
 module load conda
 module load modtree/gpu
-
-cd /anvil/projects/x-nairr250014/state-centric-gen-planning
-
+cd /anvil/projects/x-nairr250014/state-centric-plan
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 # Generate plansformer results
 uv run python -m code.plansformer.inference_plansformer \
     --val_path ./VAL/bin/Validate \
     --data_path ./data/pddl \
     --save_path ./results/plansformer \
     --model_path "./plansformer-model/codet5-base/model_files"
-

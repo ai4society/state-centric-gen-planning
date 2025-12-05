@@ -289,7 +289,7 @@ def inference(
                 problem_file_names.append(fname)
 
         # If we didn't find any problem files, we're in the wrong dir
-        if len(problem_file_paths < 1):
+        if len(problem_file_paths) < 1:
             continue
 
         dest = os.path.join(save_path, f"{domain_name}_{problem_type}.json")
@@ -305,8 +305,6 @@ def inference(
             )
             with open(problem_file_path, "r", encoding="utf-8") as f:
                 text = f.read()
-            domain_name = re.findall(r"(?<=domain )\w+", text)
-            domain_name = domain_name[0]
 
             # Parse objects into the correct format for plansformer
             objs = parse_objects_from_pddl(text)
@@ -334,18 +332,20 @@ def inference(
             )
 
             # Inverse the mapping and apply it to the generated plan
-            inv_mapping = {v: k for k, v in mapping.items()}
+            converted_plan = None
+            if mapping:
+                inv_mapping = {v: k for k, v in mapping.items()}
+                converted_plan = plan_to_list(
+                    replace_identifiers(predicted_plan, inv_mapping)
+                )
+            else:
+                converted_plan = plan_to_list(predicted_plan)
 
-            converted_plan = plan_to_list(
-                replace_identifiers(predicted_plan, inv_mapping)
-            )
-            dict = {
+            result = {
                 "problem": problem_file_name,
                 "plan": converted_plan,
                 "plan_len": len(converted_plan),
             }
-
-            results.append(dict)
 
             # Plan validation
             is_solved, is_executable = validate_plan(
@@ -355,9 +355,20 @@ def inference(
                 val_path=val_path,
             )
 
-            dict["val_solved"] = is_solved
-            dict["val_executable"] = is_executable
-            dict["solved"] = is_solved
+            result["val_solved"] = is_solved
+            result["val_executable"] = is_executable
+            result["solved"] = is_solved
+
+            results.append(result)
+
+        # Print stats about results
+        print("=" * 40)
+        print(f"{domain_name}_{problem_type} results")
+        print(f"Number of results: {len(results)}")
+        print(f"Number of solved: {len([r for r in results if r['solved']])}")
+        print(
+            f"Number of executable: {len([r for r in results if r['val_executable']])}"
+        )
 
         with open(dest, "w", encoding="utf-8") as out_f:
             json.dump(results, out_f, indent=2)

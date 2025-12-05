@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=pddl-dset
-#SBATCH --output=slurm/%x_%j.out
-#SBATCH --error=slurm/%x_%j.err
+#SBATCH --job-name=plansformer
+#SBATCH --output=slurm-out/%x_%j.out
+#SBATCH --error=slurm-out/%x_%j.err
 #SBATCH --mail-user=jaaydin@email.sc.edu
 #SBATCH --mail-type=ALL
 #SBATCH --partition=gpu-debug
@@ -18,8 +18,8 @@ cd /anvil/projects/x-nairr250014/state-centric-gen-planning
 
 # Generate plansformer results
 uv run python -m code.plansformer.inference_plansformer \
-    --val_path /home/john/bin/val \
+    --val_path ./VAL/bin/Validate \
     --data_path ./data/pddl \
     --save_path ./results/plansformer \
-    --model_path "/anvil/projects/x-nairr250014/plansformer/codet5-base/model_files"
+    --model_path "./plansformer-model/codet5-base/model_files"
 

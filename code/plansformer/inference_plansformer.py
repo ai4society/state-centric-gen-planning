@@ -1,16 +1,16 @@
+import json
 import os
 from transformers import RobertaTokenizer, T5ForConditionalGeneration
 import torch
 from torch import cuda
+import argparse
+from typing import (
+    List,
+)
 
 from pathlib import Path
 import re
-
-DATA_PATH = "../../data/pddl"
-SAVE_PATH = "../../data/plansformer"
-
-abs_data_path = os.path.abspath(DATA_PATH)
-abs_save_path = os.path.abspath(SAVE_PATH)
+from code.common.utils import validate_plan
 
 
 def find_parens(s):
@@ -158,7 +158,7 @@ def get_prompt(domain_file, problem_data):
     domain_name = re.findall(r"(?<=domain )\w+", domain_data)
     domain_name = domain_name[0]
 
-    flag = 1
+    # flag = 1
     # domain_name += '_rao'
     # print("Domain: " + domain_name)
 
@@ -242,49 +242,79 @@ def replace_identifiers(text, mapping):
     return re.sub(pattern, repl, text)
 
 
-def main():
-    model_path = "/anvil/projects/x-nairr250014/plansformer/codet5-base/model_files"
+# Converts comma seperated plan to a list of actions with parentheses around actions
+def plan_to_list(plan: str) -> List[str]:
+    return [f"({a.strip()})" for a in plan.split(",")]
+
+
+def inference(
+    val_path: str,
+    data_path: str,
+    save_path: str,
+    model_path: str,
+):
     device = "cuda" if cuda.is_available() else "cpu"
     tokenizer = RobertaTokenizer.from_pretrained(model_path, local_files_only=True)
     model = T5ForConditionalGeneration.from_pretrained(
         model_path, local_files_only=True
     )
-    model = model.to(device)
-    domain = None
-    for dirpath, dnames, fnames in os.walk(abs_data_path):
-        if "domain.pddl" in fnames:
-            domain = os.path.join(dirpath, "domain.pddl")
 
-        p_files = []
+    model = model.to(device)
+    # Don't @ me about this name.
+    domain_file_local = None
+    for dirpath, dnames, fnames in os.walk(data_path):
+        # I don't like this
+        if "domain.pddl" in fnames:
+            domain_file_local = os.path.join(dirpath, "domain.pddl")
+
+        # This will only have data in it if we are in the test-interpolation dir
+        problem_file_paths = []
+        problem_file_names = []
+
+        problem_type = None
+        domain_name = None
 
         for fname in fnames:
-            if re.fullmatch(
-                r"^.+/test-interpolation/.+\.pddl$", os.path.join(dirpath, fname)
-            ) or re.fullmatch(
-                r"^.+/test-extrapolation/.+\.pddl$", os.path.join(dirpath, fname)
-            ):
-                p_files.append(
-                    (
-                        os.path.join(
-                            dirpath,
-                            fname,
-                        )
-                    )
-                )
+            abs_fname_path = os.path.join(dirpath, fname)
 
-        for p_file in p_files:
-            p_file = Path(p_file)
-            text = p_file.read_text()
+            m = re.fullmatch(
+                r".*[/\\]pddl[/\\]([^/\\]+)[/\\](test-(?:interpolation|extrapolation))[/\\].*\.pddl$",
+                abs_fname_path,
+            )
+            if m:
+                domain_name = m.group(1)
+                problem_type = m.group(2)
+
+                problem_file_paths.append(abs_fname_path)
+                problem_file_names.append(fname)
+
+        # If we didn't find any problem files, we're in the wrong dir
+        if len(problem_file_paths < 1):
+            continue
+
+        dest = os.path.join(save_path, f"{domain_name}_{problem_type}.json")
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+
+        results = []
+
+        for problem_file_path, problem_file_name in zip(
+            problem_file_paths, problem_file_names
+        ):
+            assert problem_type and domain_name, (
+                "Internal logic error, found problem files, but failed to parse the problem type or domain name"
+            )
+            with open(problem_file_path, "r", encoding="utf-8") as f:
+                text = f.read()
             domain_name = re.findall(r"(?<=domain )\w+", text)
             domain_name = domain_name[0]
 
             # Parse objects into the correct format for plansformer
             objs = parse_objects_from_pddl(text)
             mapping = build_mapping(objs, domain_name)
-            converted = replace_identifiers(text, mapping)
+            converted_problem = replace_identifiers(text, mapping)
             prompt = get_prompt(
-                domain_file=domain,
-                problem_file=converted,
+                domain_file=domain_file_local,
+                problem_data=converted_problem,
             )
 
             input_ids = tokenizer.encode(prompt, return_tensors="pt").to(
@@ -303,15 +333,64 @@ def main():
                 generated_ids[0], skip_special_tokens=True
             )
 
-            # Destination
-            dest = os.path.join(abs_save_path, p_file.removeprefix(abs_data_path + "/"))
+            # Inverse the mapping and apply it to the generated plan
+            inv_mapping = {v: k for k, v in mapping.items()}
 
-            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            converted_plan = plan_to_list(
+                replace_identifiers(predicted_plan, inv_mapping)
+            )
+            dict = {
+                "problem": problem_file_name,
+                "plan": converted_plan,
+                "plan_len": len(converted_plan),
+            }
 
-            with open(dest, "w", encoding="utf-8") as out_f:
-                out_f.write(predicted_plan.strip() + "\n")
-                # out_f.write("Hello_world" + "\n")
+            results.append(dict)
+
+            # Plan validation
+            is_solved, is_executable = validate_plan(
+                domain_path=domain_file_local,
+                problem_path=problem_file_path,
+                plan_actions=converted_plan,
+                val_path=val_path,
+            )
+
+            dict["val_solved"] = is_solved
+            dict["val_executable"] = is_executable
+            dict["solved"] = is_solved
+
+        with open(dest, "w", encoding="utf-8") as out_f:
+            json.dump(results, out_f, indent=2)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--val_path",
+        default=os.environ.get("VAL_PATH", None),
+        help="Path to VAL binary",
+    )
+    parser.add_argument(
+        "--data_path",
+        required=True,
+    )
+    parser.add_argument(
+        "--save_path",
+        required=True,
+    )
+    parser.add_argument(
+        "--model_path",
+        required=True,
+    )
+
+    args = parser.parse_args()
+
+    assert args.val_path, "Validation binary path not provided"
+
+    # Convert to absolute
+    args.val_path = str(Path(args.val_path).expanduser().resolve())
+    args.data_path = str(Path(args.data_path).expanduser().resolve())
+    args.save_path = str(Path(args.save_path).expanduser().resolve())
+    args.model_path = str(Path(args.model_path).expanduser().resolve())
+
+    inference(**vars(args))

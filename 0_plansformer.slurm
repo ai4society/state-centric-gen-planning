@@ -1,41 +1,25 @@
 #!/bin/bash
-#SBATCH --job-name=plansformer_eval
-#SBATCH --output=slurm-out/%x_%j.out
-#SBATCH --error=slurm-out/%x_%j.err
-#SBATCH --account=nairr250014-ai
-#SBATCH --partition=ai
-#SBATCH --gres=gpu:1
-#SBATCH --time=02:00:00
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
+#SBATCH --job-name=pddl-dset
+#SBATCH --output=slurm/%x_%j.out
+#SBATCH --error=slurm/%x_%j.err
+#SBATCH --mail-user=jaaydin@email.sc.edu
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=niting@email.sc.edu
+#SBATCH --partition=gpu-debug
+#SBATCH --time=00:10:00
+#SBATCH --gres=gpu:1
 
 echo "Job started on $(hostname) at $(date)"
 
-# Load your environment (adapt to your cluster)
+# Load env
+module load conda
 module load modtree/gpu
-module load gcc/11.2.0
-module use "$HOME/privatemodules"
 
-# If you're using uv (like other scripts):
-export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+cd /anvil/projects/x-nairr250014/state-centric-gen-planning
 
-# 1) Run Plansformer to generate plans
-uv run python -m code.plansformer.generate_plans \
-    --data-dir data/pddl \
-    --output-dir data/plansformer \
-    --splits validation test-interpolation test-extrapolation \
-    --num-beams 2 \
-    --max-new-tokens 64 \
-    --log-jsonl results/plansformer/plansformer_generation_log.jsonl
+# Generate plansformer results
+uv run python -m code.plansformer.inference \
+    --val_path /home/john/bin/val \
+    --data_path ./data/pddl \
+    --save_path ./results/plansformer \
+    --model_path "/anvil/projects/x-nairr250014/plansformer/codet5-base/model_files"
 
-# 2) Evaluate against Fast Downward plans
-uv run python -m code.plansformer.evaluate_plans \
-    --pddl-dir data/pddl \
-    --gold-plans-dir data/plans \
-    --pred-plans-dir data/plansformer \
-    --results-dir results/plansformer
-
-echo "Job finished at $(date)"

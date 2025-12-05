@@ -18,4 +18,8 @@ module load conda
 module load modtree/gpu
 conda activate john_test
 cd /anvil/projects/x-nairr250014/state-centric-gen-planning/code/plansformer
-python main.py
+python main.py \
+  --val_path /home/john/bin/val \
+  --data_path ../../data \
+  --save_path ../../results/plansformer \
+  --model_path "/anvil/projects/x-nairr250014/plansformer/codet5-base/model_files"

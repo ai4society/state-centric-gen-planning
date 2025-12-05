@@ -17,7 +17,7 @@ module load modtree/gpu
 cd /anvil/projects/x-nairr250014/state-centric-gen-planning
 
 # Generate plansformer results
-uv run python -m code.plansformer.inference \
+uv run python -m code.plansformer.inference_plansformer \
     --val_path /home/john/bin/val \
     --data_path ./data/pddl \
     --save_path ./results/plansformer \

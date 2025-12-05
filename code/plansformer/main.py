@@ -3,6 +3,7 @@ from transformers import RobertaTokenizer, T5ForConditionalGeneration
 import torch
 from torch import cuda
 
+from pathlib import Path
 import re
 
 DATA_PATH = "../../data/pddl"
@@ -150,7 +151,7 @@ def prompt_problem(data):
         return string[:-2] + " "
 
 
-def get_prompt(domain_file, problem_file):
+def get_prompt(domain_file, problem_data):
     with open(domain_file, "r") as f:
         domain_data = f.read()
 
@@ -176,9 +177,6 @@ def get_prompt(domain_file, problem_file):
         else:
             domain_string += prompt_action(domain_data[idx[id] - 1 :])
 
-    with open(problem_file, "r") as f:
-        problem_data = f.read()
-
     problem_data = problem_data.replace("(:INIT", "(:init").replace("(:GOAL", "(:goal")
 
     init_ind = problem_data.find("(:init")
@@ -189,6 +187,59 @@ def get_prompt(domain_file, problem_file):
     problem_string += prompt_problem(problem_data[init_ind:goal_ind])
 
     return problem_string + domain_string
+
+
+def parse_objects_from_pddl(text):
+    # Find the :objects (...) section; allow objects on multiple lines
+    # Regex is AI generated, validated with online tools
+    m = re.search(r"\(:objects\s+([^\)]*?)\)", text, flags=re.DOTALL)
+    if not m:
+        return []
+    objs_raw = m.group(1).strip()
+    # split on whitespace
+    objs = re.split(r"\s+", objs_raw)
+    # filter empty strings
+    objs = [o for o in objs if o]
+    return objs
+
+
+def build_mapping(objs, domain: str):
+    mapping = {}
+
+    if domain == "blocks":
+        for idx, obj in enumerate(objs, start=1):
+            mapping[obj] = f"b{idx}"
+        return mapping
+
+    elif domain == "gripper":
+        room_objs = [o for o in objs if o.startswith("room")]
+
+        for idx, obj in enumerate(room_objs, start=1):
+            mapping[obj] = f"room{idx}"
+
+        # Identity mapping for all others
+        for o in objs:
+            mapping.setdefault(o, o)
+
+        return mapping
+    return None
+
+
+def replace_identifiers(text, mapping):
+    # Replace whole-word occurrences using regex word boundaries.
+    # Sort keys by length descending to avoid partial overlaps (rare but safe).
+    if not mapping:
+        return text
+
+    keys = sorted(mapping.keys(), key=len, reverse=True)
+
+    def repl(match):
+        token = match.group(0)
+        return mapping.get(token, token)
+
+    # Build a regex that matches any of the identifiers as whole words.
+    pattern = r"\b(" + "|".join(re.escape(k) for k in keys) + r")\b"
+    return re.sub(pattern, repl, text)
 
 
 def main():
@@ -222,9 +273,18 @@ def main():
                 )
 
         for p_file in p_files:
+            p_file = Path(p_file)
+            text = p_file.read_text()
+            domain_name = re.findall(r"(?<=domain )\w+", text)
+            domain_name = domain_name[0]
+
+            # Parse objects into the correct format for plansformer
+            objs = parse_objects_from_pddl(text)
+            mapping = build_mapping(objs, domain_name)
+            converted = replace_identifiers(text, mapping)
             prompt = get_prompt(
                 domain_file=domain,
-                problem_file=p_file,
+                problem_file=converted,
             )
 
             input_ids = tokenizer.encode(prompt, return_tensors="pt").to(

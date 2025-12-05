@@ -217,8 +217,8 @@ def build_mapping(objs, domain: str):
         for idx, obj in enumerate(room_objs, start=1):
             mapping[obj] = f"room{idx}"
 
-        mapping["left"] = mapping["robot1"]
-        mapping["right"] = mapping["robot2"]
+        mapping["left"] = "robot1"
+        mapping["right"] = "robot2"
 
         # Identity mapping for all others
         for o in objs:

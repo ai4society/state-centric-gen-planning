@@ -217,6 +217,9 @@ def build_mapping(objs, domain: str):
         for idx, obj in enumerate(room_objs, start=1):
             mapping[obj] = f"room{idx}"
 
+        mapping["left"] = mapping["robot1"]
+        mapping["right"] = mapping["robot2"]
+
         # Identity mapping for all others
         for o in objs:
             mapping.setdefault(o, o)
@@ -278,7 +281,7 @@ def inference(
             abs_fname_path = os.path.join(dirpath, fname)
 
             m = re.fullmatch(
-                r".*[/\\]pddl[/\\]([^/\\]+)[/\\](test-(?:interpolation|extrapolation))[/\\].*\.pddl$",
+                r".*[/\\]pddl[/\\]([^/\\]+)[/\\](test-(?:interpolation|extrapolation)|validation)[/\\].*\.pddl$",
                 abs_fname_path,
             )
             if m:

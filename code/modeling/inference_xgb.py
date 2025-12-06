@@ -135,7 +135,12 @@ def solve_problem(
     # Beam Element: (score, current_vec, atoms, plan, visited_hashes)
     # Note: XGBoost is stateless (no hidden state), unlike LSTM.
     initial_hash = frozenset(initial_atoms)
-    beam = [(0.0, init_vec, initial_atoms, [], {})]
+    
+    # Explicitly initialize set to avoid dict confusion
+    visited_set = set()
+    visited_set.add(initial_hash)
+    
+    beam = [(0.0, init_vec, initial_atoms, [], visited_set)]
 
     for _ in range(max_steps):
         candidates = []
@@ -157,7 +162,7 @@ def solve_problem(
             # Predict
             pred = model.predict(model_input)  # [1, D]
 
-            # Ensure 2D shape for addition
+            # Reshape is crucial: XGBoost might return (D,) or (1, D)
             pred = pred.reshape(1, -1)
 
             if delta:
@@ -250,9 +255,14 @@ def run_inference(args):
 
     with open(meta_path, "rb") as f:
         meta = pickle.load(f)
-
-    encoding_type = meta.get("encoding", "graphs")  # Default to graphs if missing
-    print(f"Detected Encoding: {encoding_type}")
+    
+    encoding_type = meta.get("encoding", "graphs")
+    # Override delta with what the model was actually trained on
+    trained_delta = meta.get("delta", args.delta)
+    if trained_delta != args.delta:
+        print(f"Warning: Argument --delta={args.delta} but model was trained with delta={trained_delta}. Using model setting.")
+    
+    print(f"Detected Encoding: {encoding_type} | Delta Mode: {trained_delta}")
 
     # 1. Load Encoders
     feature_encoder = None
@@ -325,7 +335,7 @@ def run_inference(args):
                     prob_path=prob_path,
                     model=model,
                     max_steps=args.max_steps,
-                    delta=args.delta,
+                    delta=trained_delta,
                     encoding_type=encoding_type,
                     feature_encoder=feature_encoder,
                     wl_domain=wl_domain,
@@ -353,8 +363,9 @@ def run_inference(args):
                     executable_count += 1
 
             except Exception as e:
-                # import traceback
-                # traceback.print_exc()
+                import traceback
+
+                traceback.print_exc()
                 results.append({"problem": prob_file, "solved": False, "error": str(e)})
 
         total = len(prob_files)

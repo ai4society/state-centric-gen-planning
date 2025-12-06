@@ -55,9 +55,6 @@ class PlanningTrajectoryDataset(Dataset):
                 # Likely T=T, D=1
                 traj = traj.reshape(-1, 1)
 
-        # traj = self.normalize(traj)
-        # goal = self.normalize(goal)
-
         return torch.from_numpy(traj), torch.from_numpy(goal)
 
 

@@ -15,9 +15,10 @@ def train(args):
         f"Training XGBoost using {'Delta Prediction' if args.delta else 'State Prediction'} with [{args.encoding}] encoding."
     )
 
-    # Adjust data directory based on encoding
-    # If args.data_dir is default (data/encodings/graphs), switch it if encoding is fsf
+    # Adjust data directory based on encoding if the user relied on default 'graphs' path
+    # If the user explicitly passed a path with 'fsf' in it (via SLURM), this block is skipped.
     if args.encoding == "fsf" and "graphs" in args.data_dir:
+        print(f"Switching data_dir from {args.data_dir} to fsf path...")
         args.data_dir = args.data_dir.replace("graphs", "fsf")
 
     # Construct save directory structure: checkpoints/<encoding>/xgboost_<mode>/
@@ -26,6 +27,13 @@ def train(args):
 
     # 1. Load Data
     print(f"Loading datasets for {args.domain} from {args.data_dir}...")
+    
+    # Debug: Check if path exists
+    train_path_check = os.path.join(args.data_dir, args.domain, "train")
+    if not os.path.exists(train_path_check):
+        print(f"CRITICAL ERROR: Training path does not exist: {train_path_check}")
+        return
+
     X_train, y_train = load_flat_dataset_for_xgboost(
         args.data_dir, args.domain, "train", delta=args.delta
     )
@@ -34,12 +42,14 @@ def train(args):
     )
 
     if X_train is None:
-        print(f"Error: No training data found for {args.domain}.")
+        print(f"Error: No training data found for {args.domain} at {train_path_check}.")
         return
 
     print(f"  Train Data: X={X_train.shape}, y={y_train.shape}")
     if X_val is not None:
         print(f"  Val Data:   X={X_val.shape}, y={y_val.shape}")
+    else:
+        print(f"  Val Data:   None (Validation skipped)")
 
     # 2. Configure XGBoost
     # Check for GPU
@@ -47,12 +57,18 @@ def train(args):
     print(f"Training on device: {device}")
 
     print("Configured hyperparameters:")
-    print(f"  Boosting rounds (n_estimators): {args.n_estimators}\n")
+    print(f"  Boosting rounds (n_estimators): {args.n_estimators}")
     print(f"  Tree depth (max_depth): {args.max_depth}")
     print(f"  Learning rate: {args.lr}")
+    print(f"  Early Stopping Rounds: {args.early_stopping}")
+
+    # Determine if we can use early stopping (requires validation data)
+    es_rounds = args.early_stopping if X_val is not None else None
 
     # XGBRegressor automatically handles Multi-Output regression
     # if y is 2D and objective is squarederror.
+    # early_stopping_rounds: this ensures that if validation score doesn't improve for N rounds, training stops.
+    # The model object will automatically keep the best iteration's weights.
     model = xgb.XGBRegressor(
         n_estimators=args.n_estimators,
         max_depth=args.max_depth,
@@ -62,6 +78,7 @@ def train(args):
         objective="reg:squarederror",
         n_jobs=8,
         random_state=args.seed,
+        early_stopping_rounds=es_rounds,
     )
 
     # 3. Train
@@ -71,17 +88,29 @@ def train(args):
     if X_val is not None:
         eval_set.append((X_val, y_val))
 
-    model.fit(X_train, y_train, eval_set=eval_set if eval_set else None, verbose=True)
+    model.fit(
+        X_train, 
+        y_train, 
+        eval_set=eval_set if eval_set else None, 
+        verbose=True,
+    )
 
     duration = time.time() - start_time
     print(f"Training finished in {duration:.2f} seconds.")
 
+    # Check if early stopping was triggered
+    if hasattr(model, 'best_iteration'):
+        print(f"Best iteration: {model.best_iteration}")
+        print(f"Best score: {model.best_score}")
+
     # 4. Save
+    # When early_stopping_rounds is used, save_model saves the trees up to the best iteration
+    # (plus the patience window), but metadata marks the best iteration.
     model_path = os.path.join(args.save_dir, f"{args.domain}_xgb.json")
     model.save_model(model_path)
     print(f"Saved model to {model_path}")
 
-    # Also save a small metadata file to know input dims during inference
+    # 5. Save Metadata
     meta = {
         "input_dim": X_train.shape[1],
         "output_dim": y_train.shape[1],
@@ -90,6 +119,7 @@ def train(args):
         "n_estimators": args.n_estimators,
         "max_depth": args.max_depth,
         "learning_rate": args.lr,
+        "best_iteration": getattr(model, 'best_iteration', -1)
     }
     with open(os.path.join(args.save_dir, f"{args.domain}_xgb_meta.pkl"), "wb") as f:
         pickle.dump(meta, f)
@@ -111,6 +141,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_estimators", type=int, default=1000)
     parser.add_argument("--max_depth", type=int, default=8)
     parser.add_argument("--lr", type=float, default=0.1)
+    parser.add_argument("--early_stopping", type=int, default=10, help="Stop if val loss doesn't improve")
     parser.add_argument(
         "--delta",
         action="store_true",

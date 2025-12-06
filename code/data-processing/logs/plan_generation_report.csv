@@ -62,7 +62,7 @@ data/pddl/logistics/test-extrapolation/probLOGISTICS-8-1.pddl,baseline,Solved by
 data/pddl/logistics/test-extrapolation/probLOGISTICS-9-0.pddl,baseline,Solved by baseline
 data/pddl/logistics/test-extrapolation/probLOGISTICS-11-0.pddl,fallback,Solved by fallback (Baseline failed)
 data/pddl/logistics/test-extrapolation/probLOGISTICS-8-0.pddl,baseline,Solved by baseline
-data/pddl/logistics/test-extrapolation/probLOGISTICS-10-0.pddl,fallback,Solved by fallback (Baseline failed)
+data/pddl/logistics/test-extrapolation/probLOGISTICS-10-0.pddl,baseline,Solved by baseline
 data/pddl/logistics/validation/probLOGISTICS-6-9.pddl,baseline,Solved by baseline
 data/pddl/logistics/validation/probLOGISTICS-6-1.pddl,baseline,Solved by baseline
 data/pddl/logistics/validation/probLOGISTICS-6-2.pddl,baseline,Solved by baseline

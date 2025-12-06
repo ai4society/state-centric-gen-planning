@@ -3,9 +3,9 @@ import csv
 import os
 import subprocess
 import tempfile
+from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from pprint import pprint
 
 from tqdm import tqdm
 
@@ -181,24 +181,73 @@ def main():
     print(f"Found {len(tasks)} problems. Starting generation...")
 
     results = []
-    stats = {"baseline": 0, "fallback": 0, "failed": 0, "exists": 0}
+    # Nested Dict: stats[domain][split][status] = count
+    detailed_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
 
     with ProcessPoolExecutor(max_workers=args.workers) as executor:
         # Use list() to force execution and show progress bar
         for res in tqdm(executor.map(process_file, tasks), total=len(tasks)):
             results.append(res)
-            stats[res["status"]] += 1
+
+            # Parse Path to get Domain and Split
+            # res['problem'] is like "data/pddl/blocks/train/prob.pddl"
+            p_path = Path(res["problem"])
+
+            # Assuming standard structure: .../<domain>/<split>/<prob.pddl>
+            # parts[-3] = domain, parts[-2] = split
+            if len(p_path.parts) >= 3:
+                domain = p_path.parts[-3]
+                split = p_path.parts[-2]
+                status = res["status"]
+                detailed_stats[domain][split][status] += 1
 
     # Save Detailed Report
-    report_path = args.report_path + "plan_generation_report.csv"
-    with open(report_path, "w", newline="") as f:
+    os.makedirs(args.report_path, exist_ok=True)
+    report_file = os.path.join(args.report_path, "plan_generation_report.csv")
+    with open(report_file, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["problem", "status", "reason"])
         writer.writeheader()
         writer.writerows(results)
 
     print("\nGeneration Complete.")
-    print(f"Detailed report saved to: {report_path}")
-    pprint(stats)
+    print(f"Detailed report saved to: {report_file}")
+
+    print("\n" + "=" * 60)
+    print(" BASELINE (FD A* 60s) PERFORMANCE REPORT")
+    print("=" * 60)
+
+    for domain in sorted(detailed_stats.keys()):
+        print(f"\nDomain: {domain}")
+        for split in sorted(detailed_stats[domain].keys()):
+            counts = detailed_stats[domain][split]
+
+            n_baseline = counts.get("baseline", 0)
+            n_fallback = counts.get("fallback", 0)
+            n_failed = counts.get("failed", 0)
+            n_exists = counts.get("exists", 0)
+
+            # We calculate percentages based on what was actually attempted
+            # If 'exists', we exclude it from the percentage because we don't know
+            # if it was baseline or fallback originally.
+            total_attempted = n_baseline + n_fallback + n_failed
+
+            if total_attempted > 0:
+                base_pct = (n_baseline / total_attempted) * 100
+                any_pct = ((n_baseline + n_fallback) / total_attempted) * 100
+
+                print(
+                    f"  {split:<20}: Baseline Solved {n_baseline}/{total_attempted} ({base_pct:6.2f}%) | "
+                    f"Total Solved {n_baseline + n_fallback}/{total_attempted} ({any_pct:6.2f}%)"
+                )
+            else:
+                if n_exists > 0:
+                    print(
+                        f"  {split:<20}: All {n_exists} plans already existed (Skipped generation)."
+                    )
+                else:
+                    print(f"  {split:<20}: No problems processed.")
+
+    print("=" * 60)
 
 
 if __name__ == "__main__":

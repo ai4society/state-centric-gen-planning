@@ -25,7 +25,7 @@ ENCODING=${2:-"graphs"} # "graphs" or "fsf"
 TARGET_MODES=("state" "delta")
 
 # 3. Hyperparameters (override via env: EPOCHS=100 sbatch ...)
-EPOCHS=${EPOCHS:-250}
+EPOCHS=${EPOCHS:-500}
 BATCH_SIZE=${BATCH_SIZE:-32}
 HIDDEN_DIM=${HIDDEN_DIM:-256}
 LR=${LR:-1e-2}
@@ -59,7 +59,7 @@ echo " Encoding:  $ENCODING"
 echo " Models:    $TARGET_MODELS"
 echo " Modes:     ${TARGET_MODES[*]}"
 echo " Data Dir:  $DATA_DIR"
-echo " Epochs:    $EPOCHS"
+echo " Epochs/Num Estimators:    $EPOCHS"
 echo " Batch Sz:  $BATCH_SIZE"
 echo " HiddenDim: $HIDDEN_DIM"
 echo " LR:        $LR"
@@ -130,6 +130,7 @@ for MODEL in $TARGET_MODELS; do
                 --domain "$DOMAIN" \
                 --save_dir "$CHECKPOINT_DIR" \
                 --data_dir "$DATA_DIR" \
+                --encoding "$ENCODING" \
                 --n_estimators "$EPOCHS" \
                 --max_depth "$MAX_DEPTH" \
                 --lr "$LR" \

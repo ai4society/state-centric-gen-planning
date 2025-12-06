@@ -211,20 +211,21 @@ def build_mapping(objs, domain: str):
             mapping[obj] = f"b{idx}"
         return mapping
 
-    elif domain == "gripper":
-        room_objs = [o for o in objs if o.startswith("room")]
+    # # Plansformer was not trained on classical gripper so this does not matter
+    # elif domain == "gripper":
+    #     room_objs = [o for o in objs if o.startswith("room")]
 
-        for idx, obj in enumerate(room_objs, start=1):
-            mapping[obj] = f"room{idx}"
+    #     for idx, obj in enumerate(room_objs, start=1):
+    #         mapping[obj] = f"room{idx}"
 
-        mapping["left"] = "robot1"
-        mapping["right"] = "robot2"
+    #     mapping["left"] = "robot1"
+    #     mapping["right"] = "robot2"
 
-        # Identity mapping for all others
-        for o in objs:
-            mapping.setdefault(o, o)
+    #     # Identity mapping for all others
+    #     for o in objs:
+    #         mapping.setdefault(o, o)
 
-        return mapping
+    #     return mapping
     return None
 
 

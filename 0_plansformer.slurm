@@ -25,7 +25,6 @@ uv run python -m code.plansformer.inference_plansformer \
     --data_path ./data/pddl \
     --save_path ./results/plansformer/r1/ \
     --model_path "./plansformer-model/codet5-base/model_files" \
-    --seed 13
 
 echo "================================================================="
 echo "============================= Run 2 ============================="
@@ -36,7 +35,6 @@ uv run python -m code.plansformer.inference_plansformer \
     --data_path ./data/pddl \
     --save_path ./results/plansformer/r2/ \
     --model_path "./plansformer-model/codet5-base/model_files" \
-    --seed 14
 
 echo "================================================================="
 echo "============================= Run 3 ============================="
@@ -47,4 +45,3 @@ uv run python -m code.plansformer.inference_plansformer \
     --data_path ./data/pddl \
     --save_path ./results/plansformer/r3/ \
     --model_path "./plansformer-model/codet5-base/model_files" \
-    --seed 15

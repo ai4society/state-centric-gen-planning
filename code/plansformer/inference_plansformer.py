@@ -1,7 +1,5 @@
-import random
 import json
 import os
-import transformers
 from transformers import RobertaTokenizer, T5ForConditionalGeneration
 import torch
 from torch import cuda
@@ -9,21 +7,10 @@ import argparse
 from typing import (
     List,
 )
-import numpy as np
 
 from pathlib import Path
 import re
 from code.common.utils import validate_plan
-
-
-def set_seed(seed: int = 42):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    transformers.set_seed(seed)
 
 
 def find_parens(s):
@@ -267,9 +254,7 @@ def inference(
     data_path: str,
     save_path: str,
     model_path: str,
-    seed: int = 13,
 ):
-    set_seed(seed)
     device = "cuda" if cuda.is_available() else "cpu"
     tokenizer = RobertaTokenizer.from_pretrained(model_path, local_files_only=True)
     model = T5ForConditionalGeneration.from_pretrained(
@@ -402,7 +387,6 @@ if __name__ == "__main__":
     parser.add_argument("--data_path", required=True)
     parser.add_argument("--save_path", required=True)
     parser.add_argument("--model_path", required=True)
-    parser.add_argument("--seed", type=int, default=13)
 
     args = parser.parse_args()
 

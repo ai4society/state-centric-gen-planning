@@ -1,3 +1,4 @@
+from random import random
 import json
 import os
 from transformers import RobertaTokenizer, T5ForConditionalGeneration
@@ -7,10 +8,20 @@ import argparse
 from typing import (
     List,
 )
+import numpy as np
 
 from pathlib import Path
 import re
 from code.common.utils import validate_plan
+
+
+def set_seed(seed: int = 42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 def find_parens(s):
@@ -254,14 +265,16 @@ def inference(
     data_path: str,
     save_path: str,
     model_path: str,
+    random_seed: int = 42,
 ):
+    set_seed(random_seed)
     device = "cuda" if cuda.is_available() else "cpu"
     tokenizer = RobertaTokenizer.from_pretrained(model_path, local_files_only=True)
     model = T5ForConditionalGeneration.from_pretrained(
         model_path, local_files_only=True
-    )
+    ).to(device)
 
-    model = model.to(device)
+    model.eval()
     # Don't @ me about this name.
     domain_file_local = None
     for dirpath, dnames, fnames in os.walk(data_path):
@@ -328,6 +341,7 @@ def inference(
                 repetition_penalty=2.5,
                 length_penalty=1.0,
                 early_stopping=False,
+                do_sample=True,
             )
             predicted_plan = tokenizer.decode(
                 generated_ids[0], skip_special_tokens=True
@@ -406,4 +420,5 @@ if __name__ == "__main__":
     args.save_path = str(Path(args.save_path).expanduser().resolve())
     args.model_path = str(Path(args.model_path).expanduser().resolve())
 
+    # If doing multiple runs, pass seeds (defaults to 42)
     inference(**vars(args))

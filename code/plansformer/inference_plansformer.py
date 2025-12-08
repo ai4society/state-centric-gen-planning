@@ -1,6 +1,7 @@
-from random import random
+import random
 import json
 import os
+import transformers
 from transformers import RobertaTokenizer, T5ForConditionalGeneration
 import torch
 from torch import cuda
@@ -22,6 +23,7 @@ def set_seed(seed: int = 42):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    transformers.set_seed(seed)
 
 
 def find_parens(s):
@@ -341,7 +343,6 @@ def inference(
                 repetition_penalty=2.5,
                 length_penalty=1.0,
                 early_stopping=False,
-                do_sample=True,
             )
             predicted_plan = tokenizer.decode(
                 generated_ids[0], skip_special_tokens=True

@@ -265,9 +265,9 @@ def inference(
     data_path: str,
     save_path: str,
     model_path: str,
-    random_seed: int = 42,
+    seed: int = 13,
 ):
-    set_seed(random_seed)
+    set_seed(seed)
     device = "cuda" if cuda.is_available() else "cpu"
     tokenizer = RobertaTokenizer.from_pretrained(model_path, local_files_only=True)
     model = T5ForConditionalGeneration.from_pretrained(
@@ -397,18 +397,10 @@ if __name__ == "__main__":
         default=os.environ.get("VAL_PATH", None),
         help="Path to VAL binary",
     )
-    parser.add_argument(
-        "--data_path",
-        required=True,
-    )
-    parser.add_argument(
-        "--save_path",
-        required=True,
-    )
-    parser.add_argument(
-        "--model_path",
-        required=True,
-    )
+    parser.add_argument("--data_path", required=True)
+    parser.add_argument("--save_path", required=True)
+    parser.add_argument("--model_path", required=True)
+    parser.add_argument("--seed", type=int, default=13)
 
     args = parser.parse_args()
 
@@ -420,5 +412,4 @@ if __name__ == "__main__":
     args.save_path = str(Path(args.save_path).expanduser().resolve())
     args.model_path = str(Path(args.model_path).expanduser().resolve())
 
-    # If doing multiple runs, pass seeds (defaults to 42)
     inference(**vars(args))

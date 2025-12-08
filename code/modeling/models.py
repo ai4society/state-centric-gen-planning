@@ -3,15 +3,23 @@ import torch.nn as nn
 
 
 class StateCentricLSTM_Delta(nn.Module):
-    def __init__(self, input_dim, hidden_dim=256, num_layers=2, embed_dim=32):
+    def __init__(
+        self, input_dim, hidden_dim=256, num_layers=2, embed_dim=32, use_projection=True
+    ):
         super().__init__()
+        self.use_projection = use_projection
 
-        # Projection: High-Dim Sparse -> Low-Dim Dense
-        self.encoder = nn.Linear(input_dim, embed_dim)
+        if self.use_projection:
+            # Projection: High-Dim Sparse -> Low-Dim Dense
+            self.encoder = nn.Linear(input_dim, embed_dim)
+            lstm_input_size = embed_dim * 2
+        else:
+            # No Projection: Use raw input dimensions
+            lstm_input_size = input_dim * 2
 
         # LSTM
         self.lstm = nn.LSTM(
-            input_size=embed_dim * 2,
+            input_size=lstm_input_size,
             hidden_size=hidden_dim,
             num_layers=num_layers,
             batch_first=True,
@@ -28,9 +36,13 @@ class StateCentricLSTM_Delta(nn.Module):
             pred_delta: [B, T, Input_D] (The predicted CHANGE)
             hidden: LSTM hidden state
         """
-        # 1. Encode
-        state_emb = torch.relu(self.encoder(state_seq))
-        goal_emb = torch.relu(self.encoder(goal_seq))
+        # 1. Encode (or pass through)
+        if self.use_projection:
+            state_emb = torch.relu(self.encoder(state_seq))
+            goal_emb = torch.relu(self.encoder(goal_seq))
+        else:
+            state_emb = state_seq
+            goal_emb = goal_seq
 
         _, T, _ = state_emb.shape
 
@@ -60,22 +72,28 @@ class StateCentricLSTM_Delta(nn.Module):
 
 
 class StateCentricLSTM(nn.Module):
-    def __init__(self, input_dim, hidden_dim=256, num_layers=2, embed_dim=32):
+    def __init__(
+        self, input_dim, hidden_dim=256, num_layers=2, embed_dim=32, use_projection=True
+    ):
         super().__init__()
+        self.use_projection = use_projection
 
-        # 1. Add a Projection Layer (Dimensionality Reduction)
-        self.encoder = nn.Linear(input_dim, embed_dim)
+        if self.use_projection:
+            # 1. Add a Projection Layer (Dimensionality Reduction)
+            self.encoder = nn.Linear(input_dim, embed_dim)
+            lstm_input_size = embed_dim * 2
+        else:
+            lstm_input_size = input_dim * 2
 
-        # LSTM takes the smaller embed_dim
-        # Input: State (embed_dim) + Goal (embed_dim)
+        # LSTM
         self.lstm = nn.LSTM(
-            input_size=embed_dim * 2,
+            input_size=lstm_input_size,
             hidden_size=hidden_dim,
             num_layers=num_layers,
             batch_first=True,
         )
 
-        # Head projects back to FULL input_dim (to match WL targets)
+        # Head projects back to FULL input_dim
         self.head = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim),
             nn.LayerNorm(hidden_dim),
@@ -89,11 +107,13 @@ class StateCentricLSTM(nn.Module):
         goal_seq: [B, D] (will be expanded to [B, T, D])
         """
 
-        # 1. Project High-Dim Sparse -> Low-Dim Dense
-        state_emb = torch.relu(self.encoder(state_seq))  # [B, T, embed_dim]
-
-        # Project Goal too (using same encoder to align spaces)
-        goal_emb = torch.relu(self.encoder(goal_seq))  # [B, embed_dim]
+        # 1. Project High-Dim Sparse -> Low-Dim Dense (Optional)
+        if self.use_projection:
+            state_emb = torch.relu(self.encoder(state_seq))  # [B, T, embed_dim]
+            goal_emb = torch.relu(self.encoder(goal_seq))  # [B, embed_dim]
+        else:
+            state_emb = state_seq
+            goal_emb = goal_seq
 
         _, T, _ = state_emb.shape
 
@@ -110,7 +130,6 @@ class StateCentricLSTM(nn.Module):
             )
 
         # LSTM Forward
-        # out: [B, T, H]
         out, hidden = self.lstm(lstm_input, hidden)
 
         if lengths is not None:

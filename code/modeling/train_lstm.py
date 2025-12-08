@@ -12,6 +12,10 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+
 def evaluate(model, val_loader, device, delta):
     """
     Computes Cosine loss on the validation set.
@@ -84,7 +88,9 @@ def evaluate(model, val_loader, device, delta):
 
 def train(args):
     set_seed(args.seed)
+    use_proj_str = "Enabled" if not args.no_projection else "Disabled"
     print(f"Training using {'Delta Prediction' if args.delta else 'State Prediction'}")
+    print(f"Projection Layer: {use_proj_str}")
 
     # cuda -> metal -> cpu
     device = torch.device(
@@ -145,10 +151,19 @@ def train(args):
     print(f"Feature Dimension: {input_dim}")
 
     # 2. Model
+    use_projection = not args.no_projection
+
     if args.delta:
-        model = StateCentricLSTM_Delta(input_dim, hidden_dim=args.hidden_dim).to(device)
+        model = StateCentricLSTM_Delta(
+            input_dim, hidden_dim=args.hidden_dim, use_projection=use_projection
+        ).to(device)
     else:
-        model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
+        model = StateCentricLSTM(
+            input_dim, hidden_dim=args.hidden_dim, use_projection=use_projection
+        ).to(device)
+
+    num_params = count_parameters(model)
+    print(f"Model Parameters: {num_params:,}")
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     if args.delta:
@@ -274,8 +289,12 @@ def train(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--domain", required=True, help="Domain name (e.g., blocks)")
-    parser.add_argument("--data_dir", required=True, help="Directory containing trajectory data")
-    parser.add_argument("--save_dir", required=True, help="Directory to save models and logs")
+    parser.add_argument(
+        "--data_dir", required=True, help="Directory containing trajectory data"
+    )
+    parser.add_argument(
+        "--save_dir", required=True, help="Directory to save models and logs"
+    )
     parser.add_argument("--epochs", type=int, default=250)
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--hidden_dim", type=int, default=256)
@@ -284,6 +303,11 @@ if __name__ == "__main__":
         "--delta",
         action="store_true",
         help="Flag to whether perform delta-based preds. Def. is False",
+    )
+    parser.add_argument(
+        "--no_projection",
+        action="store_true",
+        help="If set, disables the input projection layer (uses raw input dim)",
     )
     parser.add_argument("--seed", type=int, default=13, help="Random seed")
     args = parser.parse_args()

@@ -244,10 +244,18 @@ def run_inference(args):
 
     # Load Model
     print(f"Loading LSTM from {args.checkpoint}...")
+
+    # Determine projection usage
+    use_projection = not args.no_projection
+
     if args.delta:
-        model = StateCentricLSTM_Delta(input_dim, hidden_dim=args.hidden_dim).to(device)
+        model = StateCentricLSTM_Delta(
+            input_dim, hidden_dim=args.hidden_dim, use_projection=use_projection
+        ).to(device)
     else:
-        model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
+        model = StateCentricLSTM(
+            input_dim, hidden_dim=args.hidden_dim, use_projection=use_projection
+        ).to(device)
 
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
@@ -346,6 +354,11 @@ if __name__ == "__main__":
         "--tag",
         default="state",
         help="Optional tag to disambiguate results, e.g., 'state' or 'delta'",
+    )
+    parser.add_argument(
+        "--no_projection",
+        action="store_true",
+        help="If set, disables the input projection layer (must match training)",
     )
     parser.add_argument("--seed", type=int, default=13, help="Random seed")
 

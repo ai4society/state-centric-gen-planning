@@ -30,6 +30,7 @@ BATCH_SIZE=${BATCH_SIZE:-32}
 HIDDEN_DIM=${HIDDEN_DIM:-256}
 LR=${LR:-1e-2}
 MAX_DEPTH=${MAX_DEPTH:-8}
+NO_PROJ=${NO_PROJ:-"true"} # "true" to disable LSTM projection layer
 
 # SETUP
 echo "Job started on $(hostname) at $(date)"
@@ -63,6 +64,7 @@ echo " Epochs/Num Estimators:    $EPOCHS"
 echo " Batch Sz:  $BATCH_SIZE"
 echo " HiddenDim: $HIDDEN_DIM"
 echo " LR:        $LR"
+echo " No Proj:   $NO_PROJ"
 
 # EXECUTION LOOP
 for MODEL in $TARGET_MODELS; do
@@ -85,6 +87,13 @@ for MODEL in $TARGET_MODELS; do
             DELTA_FLAG=""
         fi
 
+        # Set Projection Flag (Only for LSTM)
+        if [ "$NO_PROJ" == "true" ]; then
+            PROJ_FLAG="--no_projection"
+        else
+            PROJ_FLAG=""
+        fi
+
         echo ""
         echo "**********************************"
         echo " RUNNING: $MODEL | MODE: $MODE"
@@ -104,7 +113,8 @@ for MODEL in $TARGET_MODELS; do
                 --batch_size "$BATCH_SIZE" \
                 --hidden_dim "$HIDDEN_DIM" \
                 --lr "$LR" \
-                $DELTA_FLAG
+                $DELTA_FLAG \
+                $PROJ_FLAG
 
             # LSTM INFERENCE
             echo "[LSTM] Inference..."
@@ -117,6 +127,7 @@ for MODEL in $TARGET_MODELS; do
                     --results_dir "$RESULTS_DIR" \
                     --hidden_dim "$HIDDEN_DIM" \
                     $DELTA_FLAG \
+                    $PROJ_FLAG \
                     --tag "$MODE"
             else
                 echo "Skipping Inference: Checkpoint not found ($BEST_PT)"

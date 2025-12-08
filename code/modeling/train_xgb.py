@@ -27,7 +27,7 @@ def train(args):
 
     # 1. Load Data
     print(f"Loading datasets for {args.domain} from {args.data_dir}...")
-    
+
     # Debug: Check if path exists
     train_path_check = os.path.join(args.data_dir, args.domain, "train")
     if not os.path.exists(train_path_check):
@@ -49,7 +49,7 @@ def train(args):
     if X_val is not None:
         print(f"  Val Data:   X={X_val.shape}, y={y_val.shape}")
     else:
-        print(f"  Val Data:   None (Validation skipped)")
+        print("  Val Data:   None (Validation skipped)")
 
     # 2. Configure XGBoost
     # Check for GPU
@@ -89,9 +89,9 @@ def train(args):
         eval_set.append((X_val, y_val))
 
     model.fit(
-        X_train, 
-        y_train, 
-        eval_set=eval_set if eval_set else None, 
+        X_train,
+        y_train,
+        eval_set=eval_set if eval_set else None,
         verbose=True,
     )
 
@@ -99,9 +99,30 @@ def train(args):
     print(f"Training finished in {duration:.2f} seconds.")
 
     # Check if early stopping was triggered
-    if hasattr(model, 'best_iteration'):
+    if hasattr(model, "best_iteration"):
         print(f"Best iteration: {model.best_iteration}")
         print(f"Best score: {model.best_score}")
+
+    # PRINT PARAMS
+    # Get the underlying booster
+    booster = model.get_booster()
+
+    # get_dump() returns a list of strings, where each string represents a tree
+    # and contains lines representing nodes/leaves.
+    trees_dump = booster.get_dump()
+    n_trees = len(trees_dump)
+
+    # Count total lines across all tree dumps to get total nodes
+    total_nodes = sum(len(t.splitlines()) for t in trees_dump)
+
+    print("-" * 30)
+    print("Model Complexity:")
+    print(f"  Total Trees: {n_trees}")
+    print(f"  Total Nodes: {total_nodes}")
+    # In a tree, every split has ~2 params (feature, threshold) and leaf has 1 (weight).
+    # Total nodes is a fair approximation of 'trainable parameters'.
+    print(f"  Approx. Parameters: {total_nodes}")
+    print("-" * 30)
 
     # 4. Save
     # When early_stopping_rounds is used, save_model saves the trees up to the best iteration
@@ -119,7 +140,7 @@ def train(args):
         "n_estimators": args.n_estimators,
         "max_depth": args.max_depth,
         "learning_rate": args.lr,
-        "best_iteration": getattr(model, 'best_iteration', -1)
+        "best_iteration": getattr(model, "best_iteration", -1),
     }
     with open(os.path.join(args.save_dir, f"{args.domain}_xgb_meta.pkl"), "wb") as f:
         pickle.dump(meta, f)
@@ -141,7 +162,12 @@ if __name__ == "__main__":
     parser.add_argument("--n_estimators", type=int, default=1000)
     parser.add_argument("--max_depth", type=int, default=8)
     parser.add_argument("--lr", type=float, default=0.1)
-    parser.add_argument("--early_stopping", type=int, default=10, help="Stop if val loss doesn't improve")
+    parser.add_argument(
+        "--early_stopping",
+        type=int,
+        default=10,
+        help="Stop if val loss doesn't improve",
+    )
     parser.add_argument(
         "--delta",
         action="store_true",

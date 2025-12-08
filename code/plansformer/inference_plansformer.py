@@ -343,6 +343,7 @@ def inference(
                 repetition_penalty=2.5,
                 length_penalty=1.0,
                 early_stopping=False,
+                do_sample=True,
             )
             predicted_plan = tokenizer.decode(
                 generated_ids[0], skip_special_tokens=True

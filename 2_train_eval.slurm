@@ -30,7 +30,8 @@ BATCH_SIZE=${BATCH_SIZE:-32}
 HIDDEN_DIM=${HIDDEN_DIM:-256}
 LR=${LR:-1e-2}
 MAX_DEPTH=${MAX_DEPTH:-8}
-NO_PROJ=${NO_PROJ:-"true"} # "true" to disable LSTM projection layer
+NO_PROJ=${NO_PROJ:-"false"} # "true" to disable LSTM projection layer
+SEED=${SEED:-13}
 
 # SETUP
 echo "Job started on $(hostname) at $(date)"
@@ -65,6 +66,7 @@ echo " Batch Sz:  $BATCH_SIZE"
 echo " HiddenDim: $HIDDEN_DIM"
 echo " LR:        $LR"
 echo " No Proj:   $NO_PROJ"
+echo " Seed:      $SEED"
 
 # EXECUTION LOOP
 for MODEL in $TARGET_MODELS; do
@@ -113,6 +115,7 @@ for MODEL in $TARGET_MODELS; do
                 --batch_size "$BATCH_SIZE" \
                 --hidden_dim "$HIDDEN_DIM" \
                 --lr "$LR" \
+                --seed "$SEED" \
                 $DELTA_FLAG \
                 $PROJ_FLAG
 
@@ -126,6 +129,7 @@ for MODEL in $TARGET_MODELS; do
                     --encoding "$ENCODING" \
                     --results_dir "$RESULTS_DIR" \
                     --hidden_dim "$HIDDEN_DIM" \
+                    --seed "$SEED" \
                     $DELTA_FLAG \
                     $PROJ_FLAG \
                     --tag "$MODE"
@@ -145,6 +149,7 @@ for MODEL in $TARGET_MODELS; do
                 --n_estimators "$EPOCHS" \
                 --max_depth "$MAX_DEPTH" \
                 --lr "$LR" \
+                --seed "$SEED" \
                 $DELTA_FLAG
 
             # XGBOOST INFERENCE
@@ -155,16 +160,12 @@ for MODEL in $TARGET_MODELS; do
                     --domain "$DOMAIN" \
                     --checkpoint_dir "$CHECKPOINT_DIR" \
                     --results_dir "$RESULTS_DIR" \
+                    --seed "$SEED" \
                     $DELTA_FLAG \
                     --tag "$MODE"
             else
                 echo "Skipping Inference: Model not found"
             fi
-            ;;
-
-        "llama")
-            # Placeholder for future integration
-            echo "[Llama] Not yet implemented in this script."
             ;;
 
         *)

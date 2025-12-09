@@ -1,0 +1,69 @@
+[
+  {
+    "problem": "balls05.pddl",
+    "plan": [
+      "(pick robot1 ball3 rooma)",
+      "(pick robot1 ball4 rooma)",
+      "(pick robot1 ball5 rooma)",
+      "(pick robot1 ball2 rooma)",
+      "(pick robot1 ball1 rooma)",
+      "(move robot1 rooma roomb)",
+      "(pick robot2 ball3 rooma)",
+      "(drop robot1 ball3 roomb)",
+      "(pick robot2 ball1 rooma)",
+      "(move robot2 rooma roomb)",
+      "(drop robot2 ball1 roomb)",
+      "(drop robot1 ball4 roomb)",
+      "(pick robot1 ball1 rooma)",
+      "(move robot1 rooma roomb)",
+      "(drop robot1 ball5 roomb)",
+      "(drop robot1 ball2 roomb)"
+    ],
+    "plan_len": 16,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "balls07.pddl",
+    "plan": [
+      "(pick robot1 ball3 rooma)",
+      "(pick robot1 ball4 rooma)",
+      "(pick robot1 ball2 rooma)",
+      "(pick robot1 ball5 rooma)",
+      "(pick robot1 ball1 rooma)",
+      "(move robot1 rooma roomb)",
+      "(pick robot2 ball6 rooma)",
+      "(drop robot1 ball3 roomb)",
+      "(pick robot2 ball1 rooma)",
+      "(move robot2 rooma roomb)",
+      "(drop robot2 ball1 roomb)",
+      "(drop robot1 ball4 roomb)",
+      "(drop robot1 ball2 roomb)",
+      "(pick robot1 ball7 rooma)",
+      "(move robot1 rooma roomb)",
+      "(drop robot1 ball7 roomb)"
+    ],
+    "plan_len": 16,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "balls03.pddl",
+    "plan": [
+      "(pick robot1 ball3 rooma)",
+      "(pick robot1 ball2 rooma)",
+      "(pick robot1 ball1 rooma)",
+      "(move robot1 rooma roomb)",
+      "(drop robot1 ball3 roomb)",
+      "(pick robot2 ball2 rooma)",
+      "(move f2 rooma roomb)",
+      "(drop b2 ball1 roomb)"
+    ],
+    "plan_len": 8,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "problem": "probLOGISTICS-6-9.pddl",
+    "plan": [
+      "(load-truck package13 truck1 s1)",
+      "(load-truck package12 truck1 s1)",
+      "(drive-truck truck1 s1 s2 driver1)",
+      "(unload-truck package13 truck1 s2)",
+      "(load-truck package2 truck1 s2)",
+      "(drive-truck truck1 s2 s1 driver1)",
+      "(unload-truck package12 truck1 s1)",
+      "(drive-truck truck1 s1 s3 driver1)",
+      "(drive-truck truck1 s3 s1)"
+    ],
+    "plan_len": 9,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "probLOGISTICS-6-1.pddl",
+    "plan": [
+      "(load-truck package12 truck1 s1)",
+      "(load-truck package13 truck1 s1)",
+      "(drive-truck truck1 s1 s1 driver1)",
+      "(unload-truck package12 truck1 s1)",
+      "(drive-truck truck1 s1 s2 driver1)",
+      "(load-truck package2 truck1 s2)",
+      "(drive-truck truck1 s2 s2 driver1)",
+      "(unload-truck package13 truck1 s2)",
+      "(drive-truck truck1 s2 s3 driver1)",
+      "(drive-truck truck1 s3 s2 driver1)",
+      "(unload-truck package2 truck1 s2)"
+    ],
+    "plan_len": 11,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "probLOGISTICS-6-2.pddl",
+    "plan": [
+      "(load-truck package13 truck1 s1)",
+      "(load-truck package12 truck1 s1)",
+      "(load-truck package11 truck1 s1)",
+      "(drive-truck truck1 s1 s2 driver11)",
+      "(unload-truck package11 truck1 s2)",
+      "(load-truck package3 truck1 s2)",
+      "(drive-truck truck1 s2 s1 driver1)",
+      "(unload-truck package12 truck1 s1)",
+      "(drive-truck truck1 s1 s1)",
+      "(drive-truck truck1 s1 s1 driver1)",
+      "(drive-truck truck1 s1 s2 driver1)",
+      "(drive-truck truck1 s2 s1)",
+      "(drive-truck truck1 s1 s2)",
+      "(unload-truck package3 truck1 s2)"
+    ],
+    "plan_len": 14,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "probLOGISTICS-6-0.pddl",
+    "plan": [
+      "(load-truck package13 truck1 s1)",
+      "(load-truck package12 truck1 s1)",
+      "(load-truck package11 truck1 s1)",
+      "(drive-truck truck1 s1 s1 driver1)",
+      "(unload-truck package12 truck1 s1)",
+      "(load-truck package1 truck1 s1)",
+      "(drive-truck truck1 s1 s1 driver1)",
+      "(drive-truck truck1 s1 s3 driver1)",
+      "(drive-truck truck1 s3 p2)",
+      "(drive-truck truck1 s3 p1)",
+      "(drive-truck truck1 s1 s2)",
+      "(unload-truck package13 truck1 s2)",
+      "(drive-truck truck1 s2 s1)",
+      "(unload-truck package1 truck1 s1)"
+    ],
+    "plan_len": 14,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  }
+]

@@ -1,0 +1,173 @@
+[
+  {
+    "problem": "p04g04-2.pddl",
+    "plan": [
+      "(board-truck driver1 l0)",
+      "(load-truck package3 truck1 s0)",
+      "(load-truck package1 truck1 s0)",
+      "(drive-truck truck1 l0 l1)",
+      "(unload-truck package3 truck1 s1)",
+      "(unload-truck package1 truck1 s1)"
+    ],
+    "plan_len": 6,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "p04g02-1.pddl",
+    "plan": [
+      "(board-truck driver0 l0)",
+      "(load-truck package3 truck2 s0)",
+      "(load-truck package2 truck2 s0)",
+      "(drive-truck truck2 s0 l1)",
+      "(unload-truck package3 truck2 s1)",
+      "(unload-truck package2 truck2 s1)"
+    ],
+    "plan_len": 6,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "p04g04-1.pddl",
+    "plan": [
+      "(board-truck driver0 l0)",
+      "(load-truck package3 truck2 s0)",
+      "(drive-truck truck2 s0 l1)",
+      "(unload-truck package3 truck2 s1)",
+      "(load-truck package1 truck2 s1)",
+      "(drive-truck truck2 s1 l0)",
+      "(unload-truck package1 truck2 s0)"
+    ],
+    "plan_len": 7,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "probLOGISTICS-4-1.pddl",
+    "plan": [
+      "(walk driver2 s2 s1)",
+      "(board-truck driver2 truck2 s1)",
+      "(load-truck package12 truck2 s1)",
+      "(load-truck package13 truck2 s1)",
+      "(drive-truck truck2 s1 s1 driver2)",
+      "(unload-truck package13 truck2 s1)",
+      "(drive-truck truck2 s1 s3 driver2)",
+      "(load-truck package3 truck2 s3)",
+      "(drive-truck truck2 s3 s2 driver2)",
+      "(drive-truck truck2 s2 s1 driver2)",
+      "(drive-truck truck2 s1 s1)",
+      "(drive-truck truck2 s1 s2 driver2)",
+      "(drive-truck truck2 s2 s4)",
+      "(unload-truck package3 truck2 s4)"
+    ],
+    "plan_len": 14,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "p04g02-3.pddl",
+    "plan": [
+      "(board-truck driver1 l1)",
+      "(load-truck package2 truck1 s1)",
+      "(load-truck package1 truck1 s1)",
+      "(drive-truck truck1 s1 l0)",
+      "(load-truck package3 truck1 s0)",
+      "(unload-truck package1 truck1 s0)",
+      "(drive-truck truck1 l0 l1)",
+      "(drive-truck truck1 s1 l0)",
+      "(unload-truck package3 truck1 s0)",
+      "(drive-truck truck1 l0 l1)",
+      "(drive-truck truck1 s1 l0)",
+      "(unload-truck package2 truck1 s0)"
+    ],
+    "plan_len": 12,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "p04g04-3.pddl",
+    "plan": [
+      "(board-truck driver1 l1)",
+      "(load-truck package2 truck1 s1)",
+      "(load-truck package1 truck1 s1)",
+      "(load-truck package3 truck1 s0)",
+      "(drive-truck truck1 s1 l0)",
+      "(unload-truck package3 truck1 s0)",
+      "(drive-truck truck1 s0 l1)",
+      "(drive-truck truck1 s1 l0)",
+      "(unload-truck package1 truck1 s0)",
+      "(drive-truck truck1 s0 l1)",
+      "(drive-truck truck1 s1 l0)",
+      "(unload-truck package2 truck1 s0)"
+    ],
+    "plan_len": 12,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "probLOGISTICS-4-2.pddl",
+    "plan": [
+      "(load-truck package12 truck1 s1)",
+      "(load-truck package13 truck1 s1)",
+      "(load-truck package11 truck1 s1)",
+      "(drive-truck truck1 s1 s1 driver1)",
+      "(unload-truck package12 truck1 s1)",
+      "(drive-truck truck1 s1 s2 driver1)",
+      "(unload-truck package13 truck1 s2)",
+      "(load-truck package3 truck1 s2)",
+      "(unload-truck package11 truck1 s2)",
+      "(drive-truck truck1 s2 s1 driver1)",
+      "(drive-truck truck1 s1 s1 driver1)",
+      "(drive-truck truck1 s1 s1)",
+      "(drive-truck truck1 s1 s1 driver1)",
+      "(drive-truck truck1 s1 s2)",
+      "(drive-truck truck1 s2 s)"
+    ],
+    "plan_len": 15,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "p04g02-2.pddl",
+    "plan": [
+      "(load-truck package3 truck1 s0)",
+      "(load-truck package1 truck1 s0)",
+      "(drive-truck truck1 l0 l1)",
+      "(unload-truck package1 truck1 s1)",
+      "(load-truck package2 truck1 s1)",
+      "(drive-truck truck1 s1 s0 driver1)",
+      "(unload-truck package3 truck1 s0)"
+    ],
+    "plan_len": 7,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  },
+  {
+    "problem": "probLOGISTICS-4-0.pddl",
+    "plan": [
+      "(load-truck package12 truck1 s1)",
+      "(load-truck package13 truck1 s1)",
+      "(drive-truck truck1 s1 s2 driver1)",
+      "(load-truck package2 truck1 s2)",
+      "(drive-truck truck1 s2 s1 driver1)",
+      "(unload-truck package13 truck1 s1)",
+      "(drive-truck truck1 s1 s12 driver1)",
+      "(unload-truck package12 truck1 s12)",
+      "(drive-truck truck1 s12 truck1 s12)",
+      "(drive-truck truck1 s12 s1 driver1)",
+      "(unload-truck package2 truck1 s1)"
+    ],
+    "plan_len": 11,
+    "val_solved": false,
+    "val_executable": false,
+    "solved": false
+  }
+]

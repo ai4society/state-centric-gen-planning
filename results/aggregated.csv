@@ -1,325 +1,205 @@
-domain,split,model,task,score
-Blocks,Validation,plansformer,,1.00
-Blocks,Validation,graph-lstm,Next-State Pred,0.67
-Blocks,Validation,graph-lstm,Delta Pred,0.67
-Blocks,Validation,graph-xgb,Next-State Pred,1.00
-Blocks,Validation,graph-xgb,Delta Pred,0.67
-Blocks,Validation,fsf-lstm,Next-State Pred,0.00
-Blocks,Validation,fsf-lstm,Delta Pred,0.00
-Blocks,Validation,fsf-xgb,Next-State Pred,0.00
-Blocks,Validation,fsf-xgb,Delta Pred,0.00
-Blocks,Interpolation,plansformer,,1.00
-Blocks,Interpolation,graph-lstm,Next-State Pred,0.67
-Blocks,Interpolation,graph-lstm,Delta Pred,1.00
-Blocks,Interpolation,graph-xgb,Next-State Pred,1.00
-Blocks,Interpolation,graph-xgb,Delta Pred,1.00
-Blocks,Interpolation,fsf-lstm,Next-State Pred,0.00
-Blocks,Interpolation,fsf-lstm,Delta Pred,0.00
-Blocks,Interpolation,fsf-xgb,Next-State Pred,0.00
-Blocks,Interpolation,fsf-xgb,Delta Pred,0.00
-Blocks,Extrapolation,plansformer,,0.10
-Blocks,Extrapolation,graph-lstm,Next-State Pred,0.00
-Blocks,Extrapolation,graph-lstm,Delta Pred,0.10
-Blocks,Extrapolation,graph-xgb,Next-State Pred,0.25
-Blocks,Extrapolation,graph-xgb,Delta Pred,0.45
-Blocks,Extrapolation,fsf-lstm,Next-State Pred,0.00
-Blocks,Extrapolation,fsf-lstm,Delta Pred,0.00
-Blocks,Extrapolation,fsf-xgb,Next-State Pred,0.00
-Blocks,Extrapolation,fsf-xgb,Delta Pred,0.00
-Gripper,Validation,plansformer,,0.00
-Gripper,Validation,graph-lstm,Next-State Pred,1.00
-Gripper,Validation,graph-lstm,Delta Pred,0.00
-Gripper,Validation,graph-xgb,Next-State Pred,0.00
-Gripper,Validation,graph-xgb,Delta Pred,0.00
-Gripper,Validation,fsf-lstm,Next-State Pred,0.50
-Gripper,Validation,fsf-lstm,Delta Pred,0.00
-Gripper,Validation,fsf-xgb,Next-State Pred,0.00
-Gripper,Validation,fsf-xgb,Delta Pred,0.00
-Gripper,Interpolation,plansformer,,0.00
-Gripper,Interpolation,graph-lstm,Next-State Pred,1.00
-Gripper,Interpolation,graph-lstm,Delta Pred,0.00
-Gripper,Interpolation,graph-xgb,Next-State Pred,0.00
-Gripper,Interpolation,graph-xgb,Delta Pred,0.00
-Gripper,Interpolation,fsf-lstm,Next-State Pred,0.00
-Gripper,Interpolation,fsf-lstm,Delta Pred,0.00
-Gripper,Interpolation,fsf-xgb,Next-State Pred,0.67
-Gripper,Interpolation,fsf-xgb,Delta Pred,0.00
-Gripper,Extrapolation,plansformer,,0.00
-Gripper,Extrapolation,graph-lstm,Next-State Pred,0.31
-Gripper,Extrapolation,graph-lstm,Delta Pred,0.00
-Gripper,Extrapolation,graph-xgb,Next-State Pred,0.00
-Gripper,Extrapolation,graph-xgb,Delta Pred,0.00
-Gripper,Extrapolation,fsf-lstm,Next-State Pred,0.06
-Gripper,Extrapolation,fsf-lstm,Delta Pred,0.00
-Gripper,Extrapolation,fsf-xgb,Next-State Pred,0.00
-Gripper,Extrapolation,fsf-xgb,Delta Pred,0.00
-VisitAll,Validation,plansformer,,0.00
-VisitAll,Validation,graph-lstm,Next-State Pred,0.96
-VisitAll,Validation,graph-lstm,Delta Pred,1.00
-VisitAll,Validation,graph-xgb,Next-State Pred,1.00
-VisitAll,Validation,graph-xgb,Delta Pred,1.00
-VisitAll,Validation,fsf-lstm,Next-State Pred,0.00
-VisitAll,Validation,fsf-lstm,Delta Pred,0.46
-VisitAll,Validation,fsf-xgb,Next-State Pred,0.13
-VisitAll,Validation,fsf-xgb,Delta Pred,0.92
-VisitAll,Interpolation,plansformer,,0.00
-VisitAll,Interpolation,graph-lstm,Next-State Pred,1.00
-VisitAll,Interpolation,graph-lstm,Delta Pred,1.00
-VisitAll,Interpolation,graph-xgb,Next-State Pred,1.00
-VisitAll,Interpolation,graph-xgb,Delta Pred,1.00
-VisitAll,Interpolation,fsf-lstm,Next-State Pred,0.54
-VisitAll,Interpolation,fsf-lstm,Delta Pred,0.38
-VisitAll,Interpolation,fsf-xgb,Next-State Pred,0.87
-VisitAll,Interpolation,fsf-xgb,Delta Pred,0.95
-VisitAll,Extrapolation,plansformer,,0.00
-VisitAll,Extrapolation,graph-lstm,Next-State Pred,0.40
-VisitAll,Extrapolation,graph-lstm,Delta Pred,0.87
-VisitAll,Extrapolation,graph-xgb,Next-State Pred,0.08
-VisitAll,Extrapolation,graph-xgb,Delta Pred,0.87
-VisitAll,Extrapolation,fsf-lstm,Next-State Pred,0.00
-VisitAll,Extrapolation,fsf-lstm,Delta Pred,0.02
-VisitAll,Extrapolation,fsf-xgb,Next-State Pred,0.00
-VisitAll,Extrapolation,fsf-xgb,Delta Pred,0.13
-Logistics,Validation,plansformer,,0.00
-Logistics,Validation,graph-lstm,Next-State Pred,0.25
-Logistics,Validation,graph-lstm,Delta Pred,0.00
-Logistics,Validation,graph-xgb,Next-State Pred,0.00
-Logistics,Validation,graph-xgb,Delta Pred,0.00
-Logistics,Validation,fsf-lstm,Next-State Pred,0.00
-Logistics,Validation,fsf-lstm,Delta Pred,0.00
-Logistics,Validation,fsf-xgb,Next-State Pred,0.00
-Logistics,Validation,fsf-xgb,Delta Pred,0.00
-Logistics,Interpolation,plansformer,,0.00
-Logistics,Interpolation,graph-lstm,Next-State Pred,0.89
-Logistics,Interpolation,graph-lstm,Delta Pred,0.22
-Logistics,Interpolation,graph-xgb,Next-State Pred,0.11
-Logistics,Interpolation,graph-xgb,Delta Pred,0.00
-Logistics,Interpolation,fsf-lstm,Next-State Pred,0.11
-Logistics,Interpolation,fsf-lstm,Delta Pred,0.11
-Logistics,Interpolation,fsf-xgb,Next-State Pred,0.44
-Logistics,Interpolation,fsf-xgb,Delta Pred,0.11
-Logistics,Extrapolation,plansformer,,0.00
-Logistics,Extrapolation,graph-lstm,Next-State Pred,0.00
-Logistics,Extrapolation,graph-lstm,Delta Pred,0.00
-Logistics,Extrapolation,graph-xgb,Next-State Pred,0.00
-Logistics,Extrapolation,graph-xgb,Delta Pred,0.00
-Logistics,Extrapolation,fsf-lstm,Next-State Pred,0.00
-Logistics,Extrapolation,fsf-lstm,Delta Pred,0.00
-Logistics,Extrapolation,fsf-xgb,Next-State Pred,0.00
-Logistics,Extrapolation,fsf-xgb,Delta Pred,0.00
-Blocks,Validation,plansformer,,1.00
-Blocks,Validation,graph-lstm,Next-State Pred,0.33
-Blocks,Validation,graph-lstm,Delta Pred,0.67
-Blocks,Validation,graph-xgb,Next-State Pred,1.00
-Blocks,Validation,graph-xgb,Delta Pred,0.67
-Blocks,Validation,fsf-lstm,Next-State Pred,0.00
-Blocks,Validation,fsf-lstm,Delta Pred,0.00
-Blocks,Validation,fsf-xgb,Next-State Pred,0.00
-Blocks,Validation,fsf-xgb,Delta Pred,0.00
-Blocks,Interpolation,plansformer,,1.00
-Blocks,Interpolation,graph-lstm,Next-State Pred,0.67
-Blocks,Interpolation,graph-lstm,Delta Pred,0.67
-Blocks,Interpolation,graph-xgb,Next-State Pred,1.00
-Blocks,Interpolation,graph-xgb,Delta Pred,1.00
-Blocks,Interpolation,fsf-lstm,Next-State Pred,0.00
-Blocks,Interpolation,fsf-lstm,Delta Pred,0.00
-Blocks,Interpolation,fsf-xgb,Next-State Pred,0.00
-Blocks,Interpolation,fsf-xgb,Delta Pred,0.00
-Blocks,Extrapolation,plansformer,,0.10
-Blocks,Extrapolation,graph-lstm,Next-State Pred,0.05
-Blocks,Extrapolation,graph-lstm,Delta Pred,0.10
-Blocks,Extrapolation,graph-xgb,Next-State Pred,0.25
-Blocks,Extrapolation,graph-xgb,Delta Pred,0.45
-Blocks,Extrapolation,fsf-lstm,Next-State Pred,0.00
-Blocks,Extrapolation,fsf-lstm,Delta Pred,0.00
-Blocks,Extrapolation,fsf-xgb,Next-State Pred,0.00
-Blocks,Extrapolation,fsf-xgb,Delta Pred,0.00
-Gripper,Validation,plansformer,,0.00
-Gripper,Validation,graph-lstm,Next-State Pred,1.00
-Gripper,Validation,graph-lstm,Delta Pred,1.00
-Gripper,Validation,graph-xgb,Next-State Pred,0.00
-Gripper,Validation,graph-xgb,Delta Pred,0.00
-Gripper,Validation,fsf-lstm,Next-State Pred,0.00
-Gripper,Validation,fsf-lstm,Delta Pred,0.50
-Gripper,Validation,fsf-xgb,Next-State Pred,0.00
-Gripper,Validation,fsf-xgb,Delta Pred,0.00
-Gripper,Interpolation,plansformer,,0.00
-Gripper,Interpolation,graph-lstm,Next-State Pred,1.00
-Gripper,Interpolation,graph-lstm,Delta Pred,1.00
-Gripper,Interpolation,graph-xgb,Next-State Pred,0.00
-Gripper,Interpolation,graph-xgb,Delta Pred,0.00
-Gripper,Interpolation,fsf-lstm,Next-State Pred,0.67
-Gripper,Interpolation,fsf-lstm,Delta Pred,0.00
-Gripper,Interpolation,fsf-xgb,Next-State Pred,0.67
-Gripper,Interpolation,fsf-xgb,Delta Pred,0.00
-Gripper,Extrapolation,plansformer,,0.00
-Gripper,Extrapolation,graph-lstm,Next-State Pred,0.31
-Gripper,Extrapolation,graph-lstm,Delta Pred,0.44
-Gripper,Extrapolation,graph-xgb,Next-State Pred,0.00
-Gripper,Extrapolation,graph-xgb,Delta Pred,0.00
-Gripper,Extrapolation,fsf-lstm,Next-State Pred,0.06
-Gripper,Extrapolation,fsf-lstm,Delta Pred,0.00
-Gripper,Extrapolation,fsf-xgb,Next-State Pred,0.00
-Gripper,Extrapolation,fsf-xgb,Delta Pred,0.00
-VisitAll,Validation,plansformer,,0.00
-VisitAll,Validation,graph-lstm,Next-State Pred,1.00
-VisitAll,Validation,graph-lstm,Delta Pred,1.00
-VisitAll,Validation,graph-xgb,Next-State Pred,1.00
-VisitAll,Validation,graph-xgb,Delta Pred,1.00
-VisitAll,Validation,fsf-lstm,Next-State Pred,0.08
-VisitAll,Validation,fsf-lstm,Delta Pred,0.50
-VisitAll,Validation,fsf-xgb,Next-State Pred,0.13
-VisitAll,Validation,fsf-xgb,Delta Pred,0.92
-VisitAll,Interpolation,plansformer,,0.00
-VisitAll,Interpolation,graph-lstm,Next-State Pred,1.00
-VisitAll,Interpolation,graph-lstm,Delta Pred,1.00
-VisitAll,Interpolation,graph-xgb,Next-State Pred,1.00
-VisitAll,Interpolation,graph-xgb,Delta Pred,1.00
-VisitAll,Interpolation,fsf-lstm,Next-State Pred,0.59
-VisitAll,Interpolation,fsf-lstm,Delta Pred,0.41
-VisitAll,Interpolation,fsf-xgb,Next-State Pred,0.86
-VisitAll,Interpolation,fsf-xgb,Delta Pred,0.95
-VisitAll,Extrapolation,plansformer,,0.00
-VisitAll,Extrapolation,graph-lstm,Next-State Pred,0.48
-VisitAll,Extrapolation,graph-lstm,Delta Pred,0.87
-VisitAll,Extrapolation,graph-xgb,Next-State Pred,0.08
-VisitAll,Extrapolation,graph-xgb,Delta Pred,0.87
-VisitAll,Extrapolation,fsf-lstm,Next-State Pred,0.00
-VisitAll,Extrapolation,fsf-lstm,Delta Pred,0.04
-VisitAll,Extrapolation,fsf-xgb,Next-State Pred,0.00
-VisitAll,Extrapolation,fsf-xgb,Delta Pred,0.13
-Logistics,Validation,plansformer,,0.00
-Logistics,Validation,graph-lstm,Next-State Pred,0.00
-Logistics,Validation,graph-lstm,Delta Pred,0.00
-Logistics,Validation,graph-xgb,Next-State Pred,0.00
-Logistics,Validation,graph-xgb,Delta Pred,0.00
-Logistics,Validation,fsf-lstm,Next-State Pred,0.00
-Logistics,Validation,fsf-lstm,Delta Pred,0.00
-Logistics,Validation,fsf-xgb,Next-State Pred,0.00
-Logistics,Validation,fsf-xgb,Delta Pred,0.00
-Logistics,Interpolation,plansformer,,0.00
-Logistics,Interpolation,graph-lstm,Next-State Pred,0.56
-Logistics,Interpolation,graph-lstm,Delta Pred,0.44
-Logistics,Interpolation,graph-xgb,Next-State Pred,0.11
-Logistics,Interpolation,graph-xgb,Delta Pred,0.00
-Logistics,Interpolation,fsf-lstm,Next-State Pred,0.33
-Logistics,Interpolation,fsf-lstm,Delta Pred,0.11
-Logistics,Interpolation,fsf-xgb,Next-State Pred,0.44
-Logistics,Interpolation,fsf-xgb,Delta Pred,0.11
-Logistics,Extrapolation,plansformer,,0.00
-Logistics,Extrapolation,graph-lstm,Next-State Pred,0.00
-Logistics,Extrapolation,graph-lstm,Delta Pred,0.00
-Logistics,Extrapolation,graph-xgb,Next-State Pred,0.00
-Logistics,Extrapolation,graph-xgb,Delta Pred,0.00
-Logistics,Extrapolation,fsf-lstm,Next-State Pred,0.00
-Logistics,Extrapolation,fsf-lstm,Delta Pred,0.00
-Logistics,Extrapolation,fsf-xgb,Next-State Pred,0.00
-Logistics,Extrapolation,fsf-xgb,Delta Pred,0.00
-Blocks,Validation,plansformer,,1.00
-Blocks,Validation,graph-lstm,Next-State Pred,0.67
-Blocks,Validation,graph-lstm,Delta Pred,0.67
-Blocks,Validation,graph-xgb,Next-State Pred,1.00
-Blocks,Validation,graph-xgb,Delta Pred,0.67
-Blocks,Validation,fsf-lstm,Next-State Pred,0.00
-Blocks,Validation,fsf-lstm,Delta Pred,0.00
-Blocks,Validation,fsf-xgb,Next-State Pred,0.00
-Blocks,Validation,fsf-xgb,Delta Pred,0.00
-Blocks,Interpolation,plansformer,,1.00
-Blocks,Interpolation,graph-lstm,Next-State Pred,0.33
-Blocks,Interpolation,graph-lstm,Delta Pred,1.00
-Blocks,Interpolation,graph-xgb,Next-State Pred,1.00
-Blocks,Interpolation,graph-xgb,Delta Pred,1.00
-Blocks,Interpolation,fsf-lstm,Next-State Pred,0.00
-Blocks,Interpolation,fsf-lstm,Delta Pred,0.00
-Blocks,Interpolation,fsf-xgb,Next-State Pred,0.00
-Blocks,Interpolation,fsf-xgb,Delta Pred,0.00
-Blocks,Extrapolation,plansformer,,0.10
-Blocks,Extrapolation,graph-lstm,Next-State Pred,0.05
-Blocks,Extrapolation,graph-lstm,Delta Pred,0.25
-Blocks,Extrapolation,graph-xgb,Next-State Pred,0.25
-Blocks,Extrapolation,graph-xgb,Delta Pred,0.45
-Blocks,Extrapolation,fsf-lstm,Next-State Pred,0.00
-Blocks,Extrapolation,fsf-lstm,Delta Pred,0.00
-Blocks,Extrapolation,fsf-xgb,Next-State Pred,0.00
-Blocks,Extrapolation,fsf-xgb,Delta Pred,0.00
-Gripper,Validation,plansformer,,0.00
-Gripper,Validation,graph-lstm,Next-State Pred,1.00
-Gripper,Validation,graph-lstm,Delta Pred,1.00
-Gripper,Validation,graph-xgb,Next-State Pred,0.00
-Gripper,Validation,graph-xgb,Delta Pred,0.00
-Gripper,Validation,fsf-lstm,Next-State Pred,0.00
-Gripper,Validation,fsf-lstm,Delta Pred,0.50
-Gripper,Validation,fsf-xgb,Next-State Pred,0.00
-Gripper,Validation,fsf-xgb,Delta Pred,0.00
-Gripper,Interpolation,plansformer,,0.00
-Gripper,Interpolation,graph-lstm,Next-State Pred,1.00
-Gripper,Interpolation,graph-lstm,Delta Pred,1.00
-Gripper,Interpolation,graph-xgb,Next-State Pred,0.00
-Gripper,Interpolation,graph-xgb,Delta Pred,0.00
-Gripper,Interpolation,fsf-lstm,Next-State Pred,0.67
-Gripper,Interpolation,fsf-lstm,Delta Pred,0.00
-Gripper,Interpolation,fsf-xgb,Next-State Pred,0.67
-Gripper,Interpolation,fsf-xgb,Delta Pred,0.00
-Gripper,Extrapolation,plansformer,,0.00
-Gripper,Extrapolation,graph-lstm,Next-State Pred,0.13
-Gripper,Extrapolation,graph-lstm,Delta Pred,0.06
-Gripper,Extrapolation,graph-xgb,Next-State Pred,0.00
-Gripper,Extrapolation,graph-xgb,Delta Pred,0.00
-Gripper,Extrapolation,fsf-lstm,Next-State Pred,0.06
-Gripper,Extrapolation,fsf-lstm,Delta Pred,0.00
-Gripper,Extrapolation,fsf-xgb,Next-State Pred,0.00
-Gripper,Extrapolation,fsf-xgb,Delta Pred,0.00
-VisitAll,Validation,plansformer,,0.00
-VisitAll,Validation,graph-lstm,Next-State Pred,1.00
-VisitAll,Validation,graph-lstm,Delta Pred,0.38
-VisitAll,Validation,graph-xgb,Next-State Pred,1.00
-VisitAll,Validation,graph-xgb,Delta Pred,1.00
-VisitAll,Validation,fsf-lstm,Next-State Pred,0.00
-VisitAll,Validation,fsf-lstm,Delta Pred,0.50
-VisitAll,Validation,fsf-xgb,Next-State Pred,0.13
-VisitAll,Validation,fsf-xgb,Delta Pred,0.92
-VisitAll,Interpolation,plansformer,,0.00
-VisitAll,Interpolation,graph-lstm,Next-State Pred,1.00
-VisitAll,Interpolation,graph-lstm,Delta Pred,0.97
-VisitAll,Interpolation,graph-xgb,Next-State Pred,1.00
-VisitAll,Interpolation,graph-xgb,Delta Pred,1.00
-VisitAll,Interpolation,fsf-lstm,Next-State Pred,0.54
-VisitAll,Interpolation,fsf-lstm,Delta Pred,0.35
-VisitAll,Interpolation,fsf-xgb,Next-State Pred,0.86
-VisitAll,Interpolation,fsf-xgb,Delta Pred,0.95
-VisitAll,Extrapolation,plansformer,,0.00
-VisitAll,Extrapolation,graph-lstm,Next-State Pred,0.52
-VisitAll,Extrapolation,graph-lstm,Delta Pred,0.03
-VisitAll,Extrapolation,graph-xgb,Next-State Pred,0.08
-VisitAll,Extrapolation,graph-xgb,Delta Pred,0.87
-VisitAll,Extrapolation,fsf-lstm,Next-State Pred,0.00
-VisitAll,Extrapolation,fsf-lstm,Delta Pred,0.03
-VisitAll,Extrapolation,fsf-xgb,Next-State Pred,0.00
-VisitAll,Extrapolation,fsf-xgb,Delta Pred,0.13
-Logistics,Validation,plansformer,,0.00
-Logistics,Validation,graph-lstm,Next-State Pred,0.25
-Logistics,Validation,graph-lstm,Delta Pred,0.25
-Logistics,Validation,graph-xgb,Next-State Pred,0.00
-Logistics,Validation,graph-xgb,Delta Pred,0.00
-Logistics,Validation,fsf-lstm,Next-State Pred,0.00
-Logistics,Validation,fsf-lstm,Delta Pred,0.00
-Logistics,Validation,fsf-xgb,Next-State Pred,0.00
-Logistics,Validation,fsf-xgb,Delta Pred,0.00
-Logistics,Interpolation,plansformer,,0.00
-Logistics,Interpolation,graph-lstm,Next-State Pred,0.89
-Logistics,Interpolation,graph-lstm,Delta Pred,0.22
-Logistics,Interpolation,graph-xgb,Next-State Pred,0.11
-Logistics,Interpolation,graph-xgb,Delta Pred,0.00
-Logistics,Interpolation,fsf-lstm,Next-State Pred,0.11
-Logistics,Interpolation,fsf-lstm,Delta Pred,0.11
-Logistics,Interpolation,fsf-xgb,Next-State Pred,0.44
-Logistics,Interpolation,fsf-xgb,Delta Pred,0.11
-Logistics,Extrapolation,plansformer,,0.00
-Logistics,Extrapolation,graph-lstm,Next-State Pred,0.00
-Logistics,Extrapolation,graph-lstm,Delta Pred,0.00
-Logistics,Extrapolation,graph-xgb,Next-State Pred,0.00
-Logistics,Extrapolation,graph-xgb,Delta Pred,0.00
-Logistics,Extrapolation,fsf-lstm,Next-State Pred,0.00
-Logistics,Extrapolation,fsf-lstm,Delta Pred,0.00
-Logistics,Extrapolation,fsf-xgb,Next-State Pred,0.00
-Logistics,Extrapolation,fsf-xgb,Delta Pred,0.00
+domain,split,model,sub_cat,accuracy,std_dev
+Blocks,Validation,FD (A* 60s),,1.00,
+Blocks,Validation,Plansformer,,1.00,0.00
+Blocks,Validation,PlanGPT,greedy,0.00,0.00
+Blocks,Validation,PlanGPT,appl.,0.00,0.00
+Blocks,Validation,PlanGPT,regr.,0.00,0.00
+Blocks,Validation,SATr (enc),greedy,1.00,0.00
+Blocks,Validation,SATr (enc-dec),greedy,1.00,0.00
+Blocks,Validation,SATr (enc-dec),appl.,1.00,0.00
+Blocks,Validation,SATr (enc-dec),regr.,0.00,0.00
+Blocks,Validation,WL-LSTM,Next-State Pred,0.56,0.16
+Blocks,Validation,WL-LSTM,Delta Pred,0.67,0.00
+Blocks,Validation,WL-XGB,Next-State Pred,1.00,0.00
+Blocks,Validation,WL-XGB,Delta Pred,0.67,0.00
+Blocks,Validation,FSF-LSTM,Next-State Pred,0.00,0.00
+Blocks,Validation,FSF-LSTM,Delta Pred,0.00,0.00
+Blocks,Validation,FSF-XGB,Next-State Pred,0.00,0.00
+Blocks,Validation,FSF-XGB,Delta Pred,0.00,0.00
+Blocks,Interpolation,FD (A* 60s),,1.00,
+Blocks,Interpolation,Plansformer,,1.00,0.00
+Blocks,Interpolation,PlanGPT,greedy,0.56,0.16
+Blocks,Interpolation,PlanGPT,appl.,0.56,0.16
+Blocks,Interpolation,PlanGPT,regr.,0.00,0.00
+Blocks,Interpolation,SATr (enc),greedy,1.00,0.00
+Blocks,Interpolation,SATr (enc-dec),greedy,1.00,0.00
+Blocks,Interpolation,SATr (enc-dec),appl.,1.00,0.00
+Blocks,Interpolation,SATr (enc-dec),regr.,1.00,0.00
+Blocks,Interpolation,WL-LSTM,Next-State Pred,0.56,0.16
+Blocks,Interpolation,WL-LSTM,Delta Pred,0.89,0.16
+Blocks,Interpolation,WL-XGB,Next-State Pred,1.00,0.00
+Blocks,Interpolation,WL-XGB,Delta Pred,1.00,0.00
+Blocks,Interpolation,FSF-LSTM,Next-State Pred,0.00,0.00
+Blocks,Interpolation,FSF-LSTM,Delta Pred,0.00,0.00
+Blocks,Interpolation,FSF-XGB,Next-State Pred,0.00,0.00
+Blocks,Interpolation,FSF-XGB,Delta Pred,0.00,0.00
+Blocks,Extrapolation,FD (A* 60s),,0.60,
+Blocks,Extrapolation,Plansformer,,0.10,0.00
+Blocks,Extrapolation,PlanGPT,greedy,0.00,0.00
+Blocks,Extrapolation,PlanGPT,appl.,0.00,0.00
+Blocks,Extrapolation,PlanGPT,regr.,0.00,0.00
+Blocks,Extrapolation,SATr (enc),greedy,0.05,0.07
+Blocks,Extrapolation,SATr (enc-dec),greedy,0.07,0.02
+Blocks,Extrapolation,SATr (enc-dec),appl.,0.13,0.05
+Blocks,Extrapolation,SATr (enc-dec),regr.,0.00,0.00
+Blocks,Extrapolation,WL-LSTM,Next-State Pred,0.03,0.02
+Blocks,Extrapolation,WL-LSTM,Delta Pred,0.15,0.07
+Blocks,Extrapolation,WL-XGB,Next-State Pred,0.25,0.00
+Blocks,Extrapolation,WL-XGB,Delta Pred,0.45,0.00
+Blocks,Extrapolation,FSF-LSTM,Next-State Pred,0.00,0.00
+Blocks,Extrapolation,FSF-LSTM,Delta Pred,0.00,0.00
+Blocks,Extrapolation,FSF-XGB,Next-State Pred,0.00,0.00
+Blocks,Extrapolation,FSF-XGB,Delta Pred,0.00,0.00
+Gripper,Validation,FD (A* 60s),,1.00,
+Gripper,Validation,Plansformer,,0.00,0.00
+Gripper,Validation,PlanGPT,greedy,0.00,0.00
+Gripper,Validation,PlanGPT,appl.,0.00,0.00
+Gripper,Validation,PlanGPT,regr.,0.00,0.00
+Gripper,Validation,SATr (enc),greedy,1.00,0.00
+Gripper,Validation,SATr (enc-dec),greedy,0.17,0.24
+Gripper,Validation,SATr (enc-dec),appl.,1.00,0.00
+Gripper,Validation,SATr (enc-dec),regr.,1.00,0.00
+Gripper,Validation,WL-LSTM,Next-State Pred,1.00,0.00
+Gripper,Validation,WL-LSTM,Delta Pred,0.67,0.47
+Gripper,Validation,WL-XGB,Next-State Pred,0.00,0.00
+Gripper,Validation,WL-XGB,Delta Pred,0.00,0.00
+Gripper,Validation,FSF-LSTM,Next-State Pred,0.17,0.24
+Gripper,Validation,FSF-LSTM,Delta Pred,0.33,0.24
+Gripper,Validation,FSF-XGB,Next-State Pred,0.00,0.00
+Gripper,Validation,FSF-XGB,Delta Pred,0.00,0.00
+Gripper,Interpolation,FD (A* 60s),,1.00,
+Gripper,Interpolation,Plansformer,,0.00,0.00
+Gripper,Interpolation,PlanGPT,greedy,0.00,0.00
+Gripper,Interpolation,PlanGPT,appl.,0.44,0.16
+Gripper,Interpolation,PlanGPT,regr.,0.00,0.00
+Gripper,Interpolation,SATr (enc),greedy,0.89,0.16
+Gripper,Interpolation,SATr (enc-dec),greedy,0.67,0.00
+Gripper,Interpolation,SATr (enc-dec),appl.,1.00,0.00
+Gripper,Interpolation,SATr (enc-dec),regr.,1.00,0.00
+Gripper,Interpolation,WL-LSTM,Next-State Pred,1.00,0.00
+Gripper,Interpolation,WL-LSTM,Delta Pred,0.67,0.47
+Gripper,Interpolation,WL-XGB,Next-State Pred,0.00,0.00
+Gripper,Interpolation,WL-XGB,Delta Pred,0.00,0.00
+Gripper,Interpolation,FSF-LSTM,Next-State Pred,0.45,0.32
+Gripper,Interpolation,FSF-LSTM,Delta Pred,0.00,0.00
+Gripper,Interpolation,FSF-XGB,Next-State Pred,0.67,0.00
+Gripper,Interpolation,FSF-XGB,Delta Pred,0.00,0.00
+Gripper,Extrapolation,FD (A* 60s),,0.13,
+Gripper,Extrapolation,Plansformer,,0.00,0.00
+Gripper,Extrapolation,PlanGPT,greedy,0.00,0.00
+Gripper,Extrapolation,PlanGPT,appl.,0.00,0.00
+Gripper,Extrapolation,PlanGPT,regr.,0.00,0.00
+Gripper,Extrapolation,SATr (enc),greedy,0.02,0.03
+Gripper,Extrapolation,SATr (enc-dec),greedy,0.00,0.00
+Gripper,Extrapolation,SATr (enc-dec),appl.,0.15,0.06
+Gripper,Extrapolation,SATr (enc-dec),regr.,0.79,0.16
+Gripper,Extrapolation,WL-LSTM,Next-State Pred,0.25,0.08
+Gripper,Extrapolation,WL-LSTM,Delta Pred,0.17,0.19
+Gripper,Extrapolation,WL-XGB,Next-State Pred,0.00,0.00
+Gripper,Extrapolation,WL-XGB,Delta Pred,0.00,0.00
+Gripper,Extrapolation,FSF-LSTM,Next-State Pred,0.06,0.00
+Gripper,Extrapolation,FSF-LSTM,Delta Pred,0.00,0.00
+Gripper,Extrapolation,FSF-XGB,Next-State Pred,0.00,0.00
+Gripper,Extrapolation,FSF-XGB,Delta Pred,0.00,0.00
+VisitAll,Validation,FD (A* 60s),,1.00,
+VisitAll,Validation,Plansformer,,0.00,0.00
+VisitAll,Validation,PlanGPT,greedy,0.00,0.00
+VisitAll,Validation,PlanGPT,appl.,0.14,0.12
+VisitAll,Validation,PlanGPT,regr.,0.00,0.00
+VisitAll,Validation,SATr (enc),greedy,1.00,0.00
+VisitAll,Validation,SATr (enc-dec),greedy,0.33,0.09
+VisitAll,Validation,SATr (enc-dec),appl.,0.93,0.04
+VisitAll,Validation,SATr (enc-dec),regr.,0.99,0.02
+VisitAll,Validation,WL-LSTM,Next-State Pred,0.99,0.02
+VisitAll,Validation,WL-LSTM,Delta Pred,0.79,0.29
+VisitAll,Validation,WL-XGB,Next-State Pred,1.00,0.00
+VisitAll,Validation,WL-XGB,Delta Pred,1.00,0.00
+VisitAll,Validation,FSF-LSTM,Next-State Pred,0.03,0.04
+VisitAll,Validation,FSF-LSTM,Delta Pred,0.49,0.02
+VisitAll,Validation,FSF-XGB,Next-State Pred,0.13,0.00
+VisitAll,Validation,FSF-XGB,Delta Pred,0.92,0.00
+VisitAll,Interpolation,FD (A* 60s),,1.00,
+VisitAll,Interpolation,Plansformer,,0.00,0.00
+VisitAll,Interpolation,PlanGPT,greedy,0.05,0.04
+VisitAll,Interpolation,PlanGPT,appl.,0.67,0.18
+VisitAll,Interpolation,PlanGPT,regr.,0.41,0.22
+VisitAll,Interpolation,SATr (enc),greedy,1.00,0.00
+VisitAll,Interpolation,SATr (enc-dec),greedy,0.87,0.01
+VisitAll,Interpolation,SATr (enc-dec),appl.,0.99,0.01
+VisitAll,Interpolation,SATr (enc-dec),regr.,1.00,0.00
+VisitAll,Interpolation,WL-LSTM,Next-State Pred,1.00,0.00
+VisitAll,Interpolation,WL-LSTM,Delta Pred,0.99,0.01
+VisitAll,Interpolation,WL-XGB,Next-State Pred,1.00,0.00
+VisitAll,Interpolation,WL-XGB,Delta Pred,1.00,0.00
+VisitAll,Interpolation,FSF-LSTM,Next-State Pred,0.56,0.02
+VisitAll,Interpolation,FSF-LSTM,Delta Pred,0.38,0.02
+VisitAll,Interpolation,FSF-XGB,Next-State Pred,0.86,0.00
+VisitAll,Interpolation,FSF-XGB,Delta Pred,0.95,0.00
+VisitAll,Extrapolation,FD (A* 60s),,0.50,
+VisitAll,Extrapolation,Plansformer,,0.00,0.00
+VisitAll,Extrapolation,PlanGPT,greedy,0.00,0.00
+VisitAll,Extrapolation,PlanGPT,appl.,0.02,0.02
+VisitAll,Extrapolation,PlanGPT,regr.,0.00,0.00
+VisitAll,Extrapolation,SATr (enc),greedy,0.42,0.11
+VisitAll,Extrapolation,SATr (enc-dec),greedy,0.00,0.00
+VisitAll,Extrapolation,SATr (enc-dec),appl.,0.15,0.05
+VisitAll,Extrapolation,SATr (enc-dec),regr.,0.64,0.12
+VisitAll,Extrapolation,WL-LSTM,Next-State Pred,0.47,0.05
+VisitAll,Extrapolation,WL-LSTM,Delta Pred,0.59,0.40
+VisitAll,Extrapolation,WL-XGB,Next-State Pred,0.08,0.00
+VisitAll,Extrapolation,WL-XGB,Delta Pred,0.87,0.00
+VisitAll,Extrapolation,FSF-LSTM,Next-State Pred,0.00,0.00
+VisitAll,Extrapolation,FSF-LSTM,Delta Pred,0.03,0.01
+VisitAll,Extrapolation,FSF-XGB,Next-State Pred,0.00,0.00
+VisitAll,Extrapolation,FSF-XGB,Delta Pred,0.13,0.00
+Logistics,Validation,FD (A* 60s),,1.00,
+Logistics,Validation,Plansformer,,0.00,0.00
+Logistics,Validation,PlanGPT,greedy,0.00,0.00
+Logistics,Validation,PlanGPT,appl.,0.08,0.12
+Logistics,Validation,PlanGPT,regr.,0.00,0.00
+Logistics,Validation,SATr (enc),greedy,0.00,0.00
+Logistics,Validation,SATr (enc-dec),greedy,0.00,0.00
+Logistics,Validation,SATr (enc-dec),appl.,0.00,0.00
+Logistics,Validation,SATr (enc-dec),regr.,0.00,0.00
+Logistics,Validation,WL-LSTM,Next-State Pred,0.17,0.12
+Logistics,Validation,WL-LSTM,Delta Pred,0.08,0.12
+Logistics,Validation,WL-XGB,Next-State Pred,0.00,0.00
+Logistics,Validation,WL-XGB,Delta Pred,0.00,0.00
+Logistics,Validation,FSF-LSTM,Next-State Pred,0.00,0.00
+Logistics,Validation,FSF-LSTM,Delta Pred,0.00,0.00
+Logistics,Validation,FSF-XGB,Next-State Pred,0.00,0.00
+Logistics,Validation,FSF-XGB,Delta Pred,0.00,0.00
+Logistics,Interpolation,FD (A* 60s),,1.00,
+Logistics,Interpolation,Plansformer,,0.00,0.00
+Logistics,Interpolation,PlanGPT,greedy,0.07,0.05
+Logistics,Interpolation,PlanGPT,appl.,0.44,0.09
+Logistics,Interpolation,PlanGPT,regr.,0.19,0.14
+Logistics,Interpolation,SATr (enc),greedy,0.11,0.00
+Logistics,Interpolation,SATr (enc-dec),greedy,0.22,0.31
+Logistics,Interpolation,SATr (enc-dec),appl.,0.26,0.29
+Logistics,Interpolation,SATr (enc-dec),regr.,0.22,0.31
+Logistics,Interpolation,WL-LSTM,Next-State Pred,0.78,0.16
+Logistics,Interpolation,WL-LSTM,Delta Pred,0.29,0.10
+Logistics,Interpolation,WL-XGB,Next-State Pred,0.11,0.00
+Logistics,Interpolation,WL-XGB,Delta Pred,0.00,0.00
+Logistics,Interpolation,FSF-LSTM,Next-State Pred,0.18,0.10
+Logistics,Interpolation,FSF-LSTM,Delta Pred,0.11,0.00
+Logistics,Interpolation,FSF-XGB,Next-State Pred,0.44,0.00
+Logistics,Interpolation,FSF-XGB,Delta Pred,0.11,0.00
+Logistics,Extrapolation,FD (A* 60s),,0.26,
+Logistics,Extrapolation,Plansformer,,0.00,0.00
+Logistics,Extrapolation,PlanGPT,greedy,0.00,0.00
+Logistics,Extrapolation,PlanGPT,appl.,0.00,0.00
+Logistics,Extrapolation,PlanGPT,regr.,0.00,0.00
+Logistics,Extrapolation,SATr (enc),greedy,0.00,0.00
+Logistics,Extrapolation,SATr (enc-dec),greedy,0.00,0.00
+Logistics,Extrapolation,SATr (enc-dec),appl.,0.00,0.00
+Logistics,Extrapolation,SATr (enc-dec),regr.,0.00,0.00
+Logistics,Extrapolation,WL-LSTM,Next-State Pred,0.00,0.00
+Logistics,Extrapolation,WL-LSTM,Delta Pred,0.00,0.00
+Logistics,Extrapolation,WL-XGB,Next-State Pred,0.00,0.00
+Logistics,Extrapolation,WL-XGB,Delta Pred,0.00,0.00
+Logistics,Extrapolation,FSF-LSTM,Next-State Pred,0.00,0.00
+Logistics,Extrapolation,FSF-LSTM,Delta Pred,0.00,0.00
+Logistics,Extrapolation,FSF-XGB,Next-State Pred,0.00,0.00
+Logistics,Extrapolation,FSF-XGB,Delta Pred,0.00,0.00

@@ -1,70 +1,60 @@
 # Codebase Documentation
 
-This directory contains the scripts required to generate data, train models, and run inference.
+## 📦 Modules
 
-## Directory Structure
+### 1. Data Processing (`code/data-processing/`)
 
-```text
-code/
-├── data-processing/           # Step 1 & 2: Symbolic Processing (PDDL/FastDownward/VAL)
-├── encoding-generation/       # Step 3: Vectorization (WL Graph Kernels)
-├── modeling/                  # Step 4 & 5: Machine Learning
-│   ├── dataset.py             # PyTorch Datasets & XGBoost Flattening logic
-│   ├── models.py              # PyTorch Architectures (LSTM)
-│   ├── train_lstm.py          # LSTM Training Script
-│   ├── inference_lstm.py      # LSTM Latent Beam Search
-│   ├── train_xgb.py           # XGBoost Training Script
-│   └── inference_xgb.py       # XGBoost Latent Beam Search
-└── common/                    # Shared Utilities (Seeding, VAL wrapper)
+Handles the symbolic aspects of planning.
+
+- `generate_plans.py`: Wraps Fast Downward to solve PDDL problems.
+- `generate_states.py`: Wraps VAL to execute plans and extract state traces.
+- `utils/`: PDDL parsing and normalization utilities.
+
+### 2. Encoding (`code/encoding-generation/`)
+
+Converts symbolic states to vectors.
+
+- `generate_graph_embeddings.py`: Uses `wlplan` to generate graph hashes.
+- `generate_fsf_embeddings.py`: Generates fixed-size vectors based on object indices.
+
+### 3. Modeling (`code/modeling/`)
+
+Contains PyTorch and XGBoost implementations.
+
+| Script              | Description                                                             |
+| :------------------ | :---------------------------------------------------------------------- |
+| `models.py`         | PyTorch architectures (StateCentricLSTM, Delta variants).               |
+| `train_lstm.py`     | Trains LSTM with Cosine Embedding Loss (State) or MSE (Delta).          |
+| `inference_lstm.py` | Performs **Latent Beam Search** using the trained LSTM.                 |
+| `train_xgb.py`      | Flattens trajectories into $(S_t, Goal) \to S_{t+1}$ pairs for XGBoost. |
+| `inference_xgb.py`  | Latent Beam Search adapted for non-sequential XGBoost models.           |
+
+## ⚙️ Common Arguments
+
+All training and inference scripts share these core flags:
+
+- `--domain`: The PDDL domain name (e.g., `blocks`, `logistics`).
+- `--delta`: **Crucial.** If set, the model learns physics residuals ($S_{t+1} - S_t$). If unset, it learns to reconstruct the raw next state.
+- `--encoding`: Choose between `graphs` (WL) or `fsf` (Fixed-Size).
+- `--beam_width`: (Inference only) Width of the latent beam search (Default: 3).
+
+## 🧪 Reproducing Inference
+
+To run inference manually without SLURM:
+
+```bash
+# LSTM Inference
+python -m code.modeling.inference_lstm \
+  --domain blocks \
+  --checkpoint checkpoints/graphs/lstm_delta/blocks_lstm_best.pt \
+  --encoding graphs \
+  --results_dir results/manual_test \
+  --delta
+
+# XGBoost Inference
+python -m code.modeling.inference_xgb \
+  --domain blocks \
+  --checkpoint_dir checkpoints/graphs/xgboost_delta \
+  --results_dir results/manual_test \
+  --delta
 ```
-
-## Machine Learning Pipeline (`code/modeling/`)
-
-We support multiple architectures. All scripts accept a `--delta` flag to toggle between predicting raw states or state differences.
-
-### 1. LSTM (Recurrent)
-
-- **Script**: `train_lstm.py` / `inference_lstm.py`
-- **Logic**: Uses a standard LSTM with a projection layer.
-- **Input**: Sequence $[S_0, S_1, \dots, S_t]$
-- **Output**: $S_{t+1}$ (State mode) or $S_{t+1} - S_t$ (Delta mode).
-
-### 2. XGBoost (Gradient Boosting)
-
-- **Script**: `train_xgb.py` / `inference_xgb.py`
-- **Logic**: Flattens the trajectory into independent transition pairs.
-- **Input**: Concatenation of $[S_t, Goal]$.
-- **Output**: $S_{t+1}$ (State mode) or $S_{t+1} - S_t$ (Delta mode).
-- **Note**: XGBoost uses the `multi:squarederror` objective to handle the multi-dimensional output vector (size $D \approx 500+$).
-
-### 3. Unified Execution
-
-The `2_unified_train_eval.slurm` script in the root directory acts as a dispatcher. It automatically organizes outputs into the following hierarchy:
-
-```text
-checkpoints/
-└── <encoding>/          # e.g., "graphs"
-    ├── lstm_state/      # Model + Mode
-    ├── lstm_delta/
-    ├── xgboost_state/
-    └── xgboost_delta/
-```
-
-## Data Processing Pipeline (`code/data-processing/`)
-
-1.  **Plan Generation**: `generate_plans.py` runs Fast Downward.
-2.  **State Generation**: `generate_states.py` runs VAL to create `.traj` files.
-3.  **Graph Embedding**: `generate_graph_embeddings.py` runs Weisfeiler-Leman to create `.npy` vectors.
-
-## Arguments & Flags
-
-Common arguments for training scripts:
-
-- `--domain`: The PDDL domain name (e.g., `blocks`).
-- `--delta`: **Crucial**. If set, the model learns physics residuals ($S_{t+1} - S_t$). If unset, it learns to reconstruct the entire state.
-- `--save_dir`: Where to save checkpoints.
-
-Common arguments for inference scripts:
-
-- `--beam_width`: Width of the latent beam search (default: 2 or 3).
-- `--max_steps`: Maximum plan length before aborting.

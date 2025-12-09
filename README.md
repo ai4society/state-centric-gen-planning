@@ -1,50 +1,78 @@
 # State-Centric Generalized Planning
 
-This repository contains the implementation for **"On Efficient Generalized Planning with State-Centric Learning"**. We hypothesize that predicting the sequence of future states (state-centric) is superior to predicting the sequence of actions (action-centric) for generalized planning.
+This repository contains the official implementation for the paper **"On Sample-Efficient Generalized Planning via Learned Transition Models"**.
 
-## Project Structure
+We propose a shift from action-centric planning (predicting actions) to **state-centric planning** (predicting future states). By learning the physics of the domain (state transitions) rather than policy, we demonstrate superior Out-of-Distribution (OOD) generalization on classical planning domains.
 
-- **`code/`**: Python scripts for data generation, training, and inference.
-- **`data/`**: Stores PDDL files, generated plans, state trajectories, and ML encodings.
-- **`checkpoints/`**: Saved models, organized by encoding and model type.
-- **`results/`**: Inference logs and JSON metrics.
+## 📂 Project Structure
 
-## Supported Models
+```text
+.
+├── code/                  # Source code for data gen, training, and inference
+├── data/                  # PDDL files, generated plans, and ML encodings
+├── checkpoints/           # Saved model weights (LSTM .pt, XGBoost .json)
+├── results/               # Inference logs and JSON metrics
+├── 1_data_pipeline.slurm  # SLURM script for full data generation
+└── 2_train_eval.slurm     # SLURM script for training and evaluation
+```
 
-1.  **LSTM (Recurrent)**: A sequence-to-sequence model maintaining a hidden state.
-2.  **XGBoost (Non-Sequential)**: A gradient-boosted tree regressor treating $(S_t, Goal) \to S_{t+1}$ as a tabular problem.
-3.  **Llama (Transformer)**: _[Coming Soon]_ Fine-tuned causal language model.
+## 🚀 Quick Start
 
-## Quick Start
+### Prerequisites
 
-### 1. Environment Setup
+We use [`uv`](https://docs.astral.sh/uv/) for fast Python dependency management.
 
-- Ensure you have [`uv`](https://docs.astral.sh/uv/) installed for dependency management.
-  _If not prefered, you can use `pip` or `conda` too._
+```bash
+pip install uv
+uv sync
+```
 
-- This project primarily ran on HPC clusters with SLURM. Those scripts are in the root directory and start with a number prefix (e.g., `1_data_pipeline.slurm`). _Please adjust those scripts for local runs as needed._
+### 1. Data Generation
 
-  - Data Pipeline: Run the full data generation pipeline (PDDL $\to$ Plans $\to$ States $\to$ Graph Embeddings).
+The pipeline converts PDDL $\to$ Plans $\to$ State Trajectories $\to$ Graph Embeddings.
 
-    ```bash
-    sbatch 1_data_pipeline.slurm
-    ```
+```bash
+# Runs the full pipeline (Fast Downward -> VAL -> WL Hashing)
+sbatch 1_data_pipeline.slurm
+```
 
-  - Training & Evaluation: We use a unified dispatcher to run experiments. This script handles training and immediate inference for specified models and domains.
+### 2. Training & Evaluation
 
-    ```bash
-    # Run ALL models on ALL domains
-    sbatch 2_unified_train_eval.slurm
+We provide a unified dispatcher to train models and immediately run inference on OOD test sets.
 
-    # Run ONLY XGBoost
-    sbatch 2_unified_train_eval.slurm "xgboost"
+**Syntax:** `sbatch 2_train_eval.slurm "<models>" "<encoding>"`
 
-    # Run ONLY LSTM
-    sbatch 2_unified_train_eval.slurm "lstm"
-    ```
+```bash
+# Experiment A: LSTM with Weisfeiler-Leman (Graph) Encodings
+sbatch 2_train_eval.slurm "lstm" "graphs"
 
-## Key Hypotheses
+# Experiment B: XGBoost with Fixed-Size Factored (FSF) Encodings
+sbatch 2_train_eval.slurm "xgboost" "fsf"
 
-- **State vs. Delta**: We compare predicting the raw next state $S_{t+1}$ vs. the difference $\Delta = S_{t+1} - S_t$.
-  - _Hypothesis:_ Delta prediction is crucial for non-deep models like XGBoost to learn "inertia" (most things don't change).
-- **OOD Generalization**: Models are trained on small instances (2-5 objects) and tested on large instances (10+ objects).
+# Experiment C: Run both models on Graphs
+sbatch 2_train_eval.slurm "lstm xgboost" "graphs"
+```
+
+## 🧠 Key Concepts
+
+### State vs. Delta Prediction
+
+We evaluate two prediction modes (controlled via `--delta`):
+
+1.  **State Prediction:** $f(S_t, Goal) \to S_{t+1}$. The model reconstructs the entire next state.
+2.  **Delta Prediction:** $f(S_t, Goal) \to \Delta$. The model predicts the _change_ ($S_{t+1} - S_t$). This is crucial for non-deep baselines (XGBoost) to learn inertia.
+
+### Latent Beam Search
+
+Unlike standard planners that search in the symbolic space, we search in the **latent embedding space**.
+
+1.  Current state $S_t$ is embedded into vector $z_t$.
+2.  Model predicts $\hat{z}_{t+1}$.
+3.  We generate symbolic successors of $S_t$, embed them, and select the one closest to $\hat{z}_{t+1}$ (via Cosine or Euclidean distance).
+
+## 📊 Baselines
+
+- **Fast Downward (FD):** Classical symbolic planner (A\*).
+- **Plansformer:** Transformer-based action sequence generator.
+- **XGBoost:** Non-sequential gradient boosting (tests if memory is required).
+- **LSTM:** Recurrent neural network (our primary efficient architecture).

@@ -77,7 +77,7 @@ def aggregate(results_dir):
         else:
             model = "Unknown"
         print(
-            f"Processing {i + 1}/{len(json_files)}: {jf.name} | Model: {model}, Domain: {meta['domain']}, Encoding: {meta['encoding']}, Split: {meta['split']}, Mode: {meta['mode']}"
+            f"Processing {i + 1}/{len(json_files)}: {jf.name} | Model: {model}, Domain: {meta['Domain']}, Encoding: {meta['Encoding']}, Split: {meta['Split']}, Mode: {meta['Mode']}"
         )
 
         try:

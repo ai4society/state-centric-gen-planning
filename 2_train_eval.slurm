@@ -30,7 +30,7 @@ BATCH_SIZE=${BATCH_SIZE:-32}
 HIDDEN_DIM=${HIDDEN_DIM:-256}
 LR=${LR:-1e-2}
 MAX_DEPTH=${MAX_DEPTH:-8}
-NO_PROJ=${NO_PROJ:-"false"} # "true" to disable LSTM projection layer
+NO_PROJ=${NO_PROJ:-"true"} # "true" to disable LSTM projection layer
 SEED=${SEED:-13}
 
 # SETUP

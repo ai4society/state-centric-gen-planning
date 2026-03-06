@@ -1,11 +1,14 @@
 #!/bin/bash
 #SBATCH --job-name=aggregate_results
 #SBATCH --output=slurm-out/%x_%j.out
+#SBATCH --error=slurm-out/%x_%j.err
+#SBATCH --account=nairr250014-ai
 #SBATCH --partition=ai
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=00:10:00
+#SBATCH --time=01:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=niting@email.sc.edu
 

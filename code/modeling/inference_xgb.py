@@ -135,11 +135,11 @@ def solve_problem(
     # Beam Element: (score, current_vec, atoms, plan, visited_hashes)
     # Note: XGBoost is stateless (no hidden state), unlike LSTM.
     initial_hash = frozenset(initial_atoms)
-    
+
     # Explicitly initialize set to avoid dict confusion
     visited_set = set()
     visited_set.add(initial_hash)
-    
+
     beam = [(0.0, init_vec, initial_atoms, [], visited_set)]
 
     for _ in range(max_steps):
@@ -255,13 +255,15 @@ def run_inference(args):
 
     with open(meta_path, "rb") as f:
         meta = pickle.load(f)
-    
+
     encoding_type = meta.get("encoding", "graphs")
     # Override delta with what the model was actually trained on
     trained_delta = meta.get("delta", args.delta)
     if trained_delta != args.delta:
-        print(f"Warning: Argument --delta={args.delta} but model was trained with delta={trained_delta}. Using model setting.")
-    
+        print(
+            f"Warning: Argument --delta={args.delta} but model was trained with delta={trained_delta}. Using model setting."
+        )
+
     print(f"Detected Encoding: {encoding_type} | Delta Mode: {trained_delta}")
 
     # 1. Load Encoders
@@ -381,7 +383,7 @@ def run_inference(args):
         tag_suffix = f"_{args.tag}" if getattr(args, "tag", "") else ""
         out_file = os.path.join(
             args.results_dir,
-            f"{args.domain}_{encoding_type}_{split}{tag_suffix}_results.json",
+            f"{args.domain}_{encoding_type}_{split}{tag_suffix}_seed{args.seed}_results.json",
         )
         with open(out_file, "w") as f:
             json.dump(results, f, indent=2)

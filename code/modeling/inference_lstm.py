@@ -327,7 +327,7 @@ def run_inference(args):
         tag_suffix = f"_{args.tag}" if getattr(args, "tag", "") else ""
         out_file = os.path.join(
             args.results_dir,
-            f"{args.domain}_{args.encoding}_{split}{tag_suffix}_results.json",
+            f"{args.domain}_{args.encoding}_{split}{tag_suffix}_seed{args.seed}_results.json",
         )
         with open(out_file, "w") as f:
             json.dump(results, f, indent=2)

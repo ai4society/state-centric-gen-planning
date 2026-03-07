@@ -105,14 +105,6 @@ def aggregate(results_dir):
     return pd.DataFrame(data_records)
 
 
-def format_mean_std(x):
-    if len(x) == 0:
-        return "-"
-    if len(x) == 1:
-        return f"{x.mean():.2f}"
-    return f"{x.mean():.2f} ± {x.std():.2f}"
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="Aggregate Generalized Planning Results"
@@ -142,7 +134,7 @@ def main():
         index=["Domain", "Split"],
         columns="Config",
         values="Coverage",
-        aggfunc=format_mean_std,
+        aggfunc="max",  # In case of duplicates, take max
     )
 
     # Sort index to match paper order usually
@@ -151,12 +143,10 @@ def main():
     # Generate String Representation
     if args.format == "markdown":
         output_str = pivot_df.to_markdown()
-    elif args.format == "latex":
-        output_str = pivot_df.to_latex()
     else:
         output_str = pivot_df.to_csv()
 
-    print("\n=== Aggregated Results (Mean ± Std) ===\n")
+    print("\n=== Aggregated Results ===\n")
     print(output_str)
 
     # Save to File

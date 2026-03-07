@@ -1,78 +1,109 @@
-# State-Centric Generalized Planning
+# On Sample-Efficient Generalized Planning via Learned Transition Models
 
-This repository contains the official implementation for the paper **"On Sample-Efficient Generalized Planning via Learned Transition Models"**.
+<p align="center">
+  <a href="https://icaps26.icaps-conference.org/">
+    <img src="https://img.shields.io/badge/ICAPS-2026-blue" alt="ICAPS 2026" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT" />
+  </a>
+  <a href="https://arxiv.org/abs/2602.23148">
+    <img src="https://img.shields.io/badge/ArXiv-2406.12345-darkred" alt="ArXiv" />
+  </a>
+</p>
 
-We propose a shift from action-centric planning (predicting actions) to **state-centric planning** (predicting future states). By learning the physics of the domain (state transitions) rather than policy, we demonstrate superior Out-of-Distribution (OOD) generalization on classical planning domains.
+Official implementation of the paper **"On Sample-Efficient Generalized Planning via Learned Transition Models"**, accepted at **ICAPS 2026**.
 
-## 📂 Project Structure
+We propose a **state-centric** formulation for generalized planning. Instead of predicting actions directly (like Plansformer or PlanGPT), our models learn the domain physics (transition dynamics) and generate plans by rolling out symbolic state trajectories in a latent space. This approach achieves superior Out-of-Distribution (OOD) generalization with significantly smaller models and less data.
 
-```text
-.
-├── code/                  # Source code for data gen, training, and inference
-├── data/                  # PDDL files, generated plans, and ML encodings
-├── checkpoints/           # Saved model weights (LSTM .pt, XGBoost .json)
-├── results/               # Inference logs and JSON metrics
-├── 1_data_pipeline.slurm  # SLURM script for full data generation
-└── 2_train_eval.slurm     # SLURM script for training and evaluation
-```
+## 📖 Abstract
+
+Generalized planning studies the construction of solution strategies that generalize across families of planning problems sharing a common domain model. While recent Transformer-based planners cast generalized planning as direct action-sequence prediction, they often suffer from state drift in long-horizon settings. In this work, we formulate generalized planning as a transition-model learning problem. Our results show that learning explicit transition models yields higher out-of-distribution satisficing-plan success than direct action-sequence prediction, while achieving these gains with significantly fewer training instances and smaller models.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-We use [`uv`](https://docs.astral.sh/uv/) for fast Python dependency management.
+We recommend using [`uv`](https://docs.astral.sh/uv/) for dependency management, or standard `pip`.
 
 ```bash
-pip install uv
+# Option A: Using uv (Recommended)
 uv sync
+
+# Option B: Standard pip (requirements.txt was generated from the uv environment)
+pip install -r requirements.txt
 ```
 
 ### 1. Data Generation
 
-The pipeline converts PDDL $\to$ Plans $\to$ State Trajectories $\to$ Graph Embeddings.
+The entire data generation pipeline can be run with the `1_data_pipeline.slurm` shell script, which is ideal for cluster execution. Alternatively, you can run the individual python modules locally to generate plans, reconstruct state trajectories, and compute graph embeddings:
 
 ```bash
-# Runs the full pipeline (Fast Downward -> VAL -> WL Hashing)
-sbatch 1_data_pipeline.slurm
+# Assumes uv environment is activated. If using pip, ensure you have the required dependencies installed.
+
+# Runs Fast Downward -> VAL -> WL Hashing
+# Adjust --workers based on your CPU core count
+python -m code.data-processing.generate_plans --workers 8
+python -m code.data-processing.generate_states --workers 8
+python -m code.encoding-generation.generate_graph_embeddings
 ```
 
 ### 2. Training & Evaluation
 
-We provide a unified dispatcher to train models and immediately run inference on OOD test sets.
-
-**Syntax:** `sbatch 2_train_eval.slurm "<models>" "<encoding>"`
+The entire training and evaluation pipeline can be executed with the `2_train_eval.slurm` shell script. Below are the individual commands to train the transition models (LSTM or XGBoost) and evaluate on OOD instances:
 
 ```bash
-# Experiment A: LSTM with Weisfeiler-Leman (Graph) Encodings
-sbatch 2_train_eval.slurm "lstm" "graphs"
+# Assumes uv environment is activated. If using pip, ensure you have the required dependencies installed.
 
-# Experiment B: XGBoost with Fixed-Size Factored (FSF) Encodings
-sbatch 2_train_eval.slurm "xgboost" "fsf"
+# Train LSTM with Delta prediction on Graph Embeddings
+python -m code.modeling.train_lstm \
+  --domain blocks \
+  --data_dir data/encodings/graphs \
+  --save_dir checkpoints/graphs/lstm_delta \
+  --delta
 
-# Experiment C: Run both models on Graphs
-sbatch 2_train_eval.slurm "lstm xgboost" "graphs"
+# Run Inference (Latent Beam Search)
+python -m code.modeling.inference_lstm \
+  --domain blocks \
+  --checkpoint checkpoints/graphs/lstm_delta/blocks_lstm_best.pt \
+  --encoding graphs \
+  --results_dir results/graphs/lstm_delta \
+  --delta
 ```
 
-## 🧠 Key Concepts
+### 3. Automated Results Aggregation
 
-### State vs. Delta Prediction
+For the aggregation step, execute the following command locally to parse the inference logs and generate a markdown table, or a csv, summarizing the coverage results:
 
-We evaluate two prediction modes (controlled via `--delta`):
+```bash
+# Assumes uv environment is activated. If using pip, ensure you have the required dependencies installed.
 
-1.  **State Prediction:** $f(S_t, Goal) \to S_{t+1}$. The model reconstructs the entire next state.
-2.  **Delta Prediction:** $f(S_t, Goal) \to \Delta$. The model predicts the _change_ ($S_{t+1} - S_t$). This is crucial for non-deep baselines (XGBoost) to learn inertia.
+# Generate the results table (Coverage %) from the inference logs to markdown format
+python -m code.analysis.aggregate_results --format markdown
+```
 
-### Latent Beam Search
+Note that this step should be performed after all inference runs are complete, as it reads the JSON logs generated during inference to compute the final coverage metrics.
 
-Unlike standard planners that search in the symbolic space, we search in the **latent embedding space**.
+## 📂 Repository Structure
 
-1.  Current state $S_t$ is embedded into vector $z_t$.
-2.  Model predicts $\hat{z}_{t+1}$.
-3.  We generate symbolic successors of $S_t$, embed them, and select the one closest to $\hat{z}_{t+1}$ (via Cosine or Euclidean distance).
+- `code/`: Source code for data generation, modeling, and analysis.
+- `data/`: Stores PDDL, plans, state trajectories, and vector encodings.
+- `checkpoints/`: Saved model weights.
+- `results/`: JSON logs containing validation results for every test problem.
 
-## 📊 Baselines
+## 🖊️ Citation
 
-- **Fast Downward (FD):** Classical symbolic planner (A\*).
-- **Plansformer:** Transformer-based action sequence generator.
-- **XGBoost:** Non-sequential gradient boosting (tests if memory is required).
-- **LSTM:** Recurrent neural network (our primary efficient architecture).
+If you find this work useful, please cite as:
+
+```bibtex
+@article{gupta2026sample,
+  title={On Sample-Efficient Generalized Planning via Learned Transition Models},
+  author={Gupta, Nitin and Pallagani, Vishal and Aydin, John A and Srivastava, Biplav},
+  journal={arXiv preprint arXiv:2602.23148},
+  year={2026}
+}
+```
+
+## 📬 Contact
+
+For questions or feedback, please open an issue or contact [ai4societyteam@gmail.com](mailto:ai4societyteam@gmail.com).

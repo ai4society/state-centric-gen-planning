@@ -16,7 +16,11 @@ Official implementation of the paper **"On Sample-Efficient Generalized Planning
 
 We propose a **state-centric** formulation for generalized planning. Instead of predicting actions directly (like Plansformer or PlanGPT), our models learn the domain physics (transition dynamics) and generate plans by rolling out symbolic state trajectories in a latent space. This approach achieves superior Out-of-Distribution (OOD) generalization with significantly smaller models and less data.
 
-## 🧠 Main Architecture
+## Abstract
+
+Generalized planning studies the construction of solution strategies that generalize across families of planning problems sharing a common domain model. While recent Transformer-based planners cast generalized planning as direct action-sequence prediction, they often suffer from state drift in long-horizon settings. In this work, we formulate generalized planning as a transition-model learning problem. Our results show that learning explicit transition models yields higher out-of-distribution satisficing-plan success than direct action-sequence prediction, while achieving these gains with significantly fewer training instances and smaller models.
+
+## Main Architecture
 
 ![State-Centric Generalized Planning Pipeline](assets/state-centric-arch.png)
 
@@ -27,11 +31,7 @@ From a symbolic planning instance $\Pi$, executable plans are generated using a 
 **(3) Neuro-Symbolic Plan Decoding:** The predicted successor embedding $\hat{\phi}(s_{t+1})$ is matched against all valid symbolic successors $\mathrm{Succ}(s_t)$ induced by $\gamma$, and the nearest valid successor is selected to recover the executable action.
 This guarantees symbolic validity while enabling transition-model-based generalization.
 
-## 📖 Abstract
-
-Generalized planning studies the construction of solution strategies that generalize across families of planning problems sharing a common domain model. While recent Transformer-based planners cast generalized planning as direct action-sequence prediction, they often suffer from state drift in long-horizon settings. In this work, we formulate generalized planning as a transition-model learning problem. Our results show that learning explicit transition models yields higher out-of-distribution satisficing-plan success than direct action-sequence prediction, while achieving these gains with significantly fewer training instances and smaller models.
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -95,14 +95,14 @@ python -m code.analysis.aggregate_results --format markdown
 
 Note that this step should be performed after all inference runs are complete, as it reads the JSON logs generated during inference to compute the final coverage metrics.
 
-## 📂 Repository Structure
+## Repository Structure
 
 - `code/`: Source code for data generation, modeling, and analysis.
 - `data/`: Stores PDDL, plans, state trajectories, and vector encodings.
 - `checkpoints/`: Saved model weights.
 - `results/`: JSON logs containing validation results for every test problem.
 
-## 🖊️ Citation
+## Citation
 
 If you find this work useful, please cite as:
 
@@ -115,6 +115,6 @@ If you find this work useful, please cite as:
 }
 ```
 
-## 📬 Contact
+## Contact
 
 For questions or feedback, please open an issue or contact [ai4societyteam@gmail.com](mailto:ai4societyteam@gmail.com).

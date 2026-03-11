@@ -16,6 +16,17 @@ Official implementation of the paper **"On Sample-Efficient Generalized Planning
 
 We propose a **state-centric** formulation for generalized planning. Instead of predicting actions directly (like Plansformer or PlanGPT), our models learn the domain physics (transition dynamics) and generate plans by rolling out symbolic state trajectories in a latent space. This approach achieves superior Out-of-Distribution (OOD) generalization with significantly smaller models and less data.
 
+## 🧠 Main Architecture
+
+![State-Centric Generalized Planning Pipeline](assets/state-centric-arch.png)
+
+**Figure: State-Centric Generalized Planning Pipeline.**
+From a symbolic planning instance $\Pi$, executable plans are generated using a learned transition model.
+**(1) State Encoding:** Symbolic state-goal pairs $(s_t, g)$ are mapped to fixed-dimensional embeddings $\phi(s_t)$ using either WL graph kernels or fixed-size factored vectors.
+**(2) Transition Modeling:** A parametric model (LSTM) or a non-parametric model (XGBoost) learns residual state transitions $\Delta_t$ to predict successor embeddings.
+**(3) Neuro-Symbolic Plan Decoding:** The predicted successor embedding $\hat{\phi}(s_{t+1})$ is matched against all valid symbolic successors $\mathrm{Succ}(s_t)$ induced by $\gamma$, and the nearest valid successor is selected to recover the executable action.
+This guarantees symbolic validity while enabling transition-model-based generalization.
+
 ## 📖 Abstract
 
 Generalized planning studies the construction of solution strategies that generalize across families of planning problems sharing a common domain model. While recent Transformer-based planners cast generalized planning as direct action-sequence prediction, they often suffer from state drift in long-horizon settings. In this work, we formulate generalized planning as a transition-model learning problem. Our results show that learning explicit transition models yields higher out-of-distribution satisficing-plan success than direct action-sequence prediction, while achieving these gains with significantly fewer training instances and smaller models.

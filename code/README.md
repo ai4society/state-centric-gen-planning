@@ -1,6 +1,6 @@
 # Codebase Documentation
 
-## 📦 Modules
+## Modules
 
 ### 1. Data Processing (`code/data-processing/`)
 
@@ -27,7 +27,7 @@ Contains PyTorch and XGBoost implementations.
 
 - `aggregate_results.py`: Scans the `results/` directory and produces a summary table of coverage rates across domains and splits.
 
-## ⚙️ Key Arguments
+## Key Arguments
 
 - `--delta`: **Crucial.** If set, the model learns physics residuals ($S_{t+1} - S_t$). If unset, it learns to reconstruct the raw next state.
 - `--encoding`: Choose between `graphs` (WL) or `fsf` (Fixed-Size).

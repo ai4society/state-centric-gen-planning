@@ -2,7 +2,7 @@
 
 This directory manages the lifecycle of planning data, from raw PDDL to machine-learning-ready vectors.
 
-## 🗂 Directory Hierarchy
+## Directory Hierarchy
 
 ```text
 data/
@@ -19,7 +19,16 @@ data/
     └── fsf/               # Fixed-Size Factored Embeddings
 ```
 
-## 🛠 Encoding Strategies
+## PDDL Data (`data/pddl/`)
+
+This directory contains the symbolic definitions of the planning tasks. There are taken from the [Symmetry-Aware Transformer Training for Automated Planning Repository](https://github.com/mrlab-ai/symmetry-transformers/tree/main) ([permalink when copied](https://github.com/mrlab-ai/symmetry-transformers/tree/56983a26a37e28e2f148ce067565c9d8eefb85eb/pddl)). Some processing was done, such as lowercasing. The splits are as follows:
+
+- `train`: Small instances (e.g., 2-5 blocks) used for learning.
+- `validation`: Slightly larger instances for hyperparameter tuning.
+- `test-interpolation`: Instances of similar size to training but unseen configurations.
+- `test-extrapolation`: Large instances (e.g., 10+ blocks) to test Out-of-Distribution (OOD) generalization.
+
+## Encoding Strategies
 
 We compare two distinct state representations:
 
@@ -37,7 +46,7 @@ We compare two distinct state representations:
 - **Cons:** Fails to generalize if $N_{test} > N_{train}$. Used to demonstrate the necessity of graph representations.
 - **Format:** `.npy` files containing dense vectors.
 
-## 📄 File Formats
+## File Formats
 
 **Trajectory Files (`.npy`):**
 

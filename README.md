@@ -102,6 +102,12 @@ Note that this step should be performed after all inference runs are complete, a
 - `checkpoints/`: Saved model weights.
 - `results/`: JSON logs containing validation results for every test problem.
 
+## Acknowledgments
+
+This project used the [Fast Downward planner](https://github.com/aibasel/downward) for plan generation and the [VAL tool](https://github.com/KCL-Planning/VAL) for plan validation. We also thank the [WLPlan library](https://github.com/DillonZChen/wlplan) specifically for providing a powerful tool for state encoding. Lastly, we also thank all other libraries and tools used in this project (detailed in `pyproject.toml`).
+
+Do note that this project uses a forked version of WLPlan, which we modified to work on MacOS systems. The fork can be found at [https://github.com/g-nitin/wlplan](https://github.com/g-nitin/wlplan).
+
 ## Citation
 
 If you find this work useful, please cite as:

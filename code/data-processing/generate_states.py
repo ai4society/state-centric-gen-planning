@@ -1,11 +1,12 @@
 import argparse
 import csv
 import os
+import random
 import subprocess
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from pprint import pprint
-import random
+
 import numpy as np
 from tqdm import tqdm
 
@@ -103,7 +104,7 @@ def main():
     parser.add_argument("--output_dir", default="data/states")
     parser.add_argument("--report_path", default="code/data-processing/logs/")
     parser.add_argument("--workers", type=int, default=8)
-    parser.add_argument("--seed", type=int, default=13)
+    parser.add_argument("--seed", type=int, default=15)
     args = parser.parse_args()
 
     # Set seeds

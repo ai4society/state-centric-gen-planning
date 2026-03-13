@@ -76,7 +76,7 @@ python -m code.modeling.train_lstm \
 # Run Inference (Latent Beam Search)
 python -m code.modeling.inference_lstm \
   --domain blocks \
-  --checkpoint checkpoints/graphs/lstm_delta/blocks_lstm_best.pt \
+  --checkpoint checkpoints/graphs/lstm_delta/blocks_lstm_best_seed15.pt \
   --encoding graphs \
   --results_dir results/graphs/lstm_delta \
   --delta

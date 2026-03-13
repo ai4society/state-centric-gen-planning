@@ -4,7 +4,12 @@ import torch.nn as nn
 
 class StateCentricLSTM_Delta(nn.Module):
     def __init__(
-        self, input_dim, hidden_dim=256, num_layers=2, embed_dim=32, use_projection=True
+        self,
+        input_dim,
+        hidden_dim=256,
+        num_layers=2,
+        embed_dim=32,
+        use_projection=False,
     ):
         super().__init__()
         self.use_projection = use_projection
@@ -73,7 +78,12 @@ class StateCentricLSTM_Delta(nn.Module):
 
 class StateCentricLSTM(nn.Module):
     def __init__(
-        self, input_dim, hidden_dim=256, num_layers=2, embed_dim=32, use_projection=True
+        self,
+        input_dim,
+        hidden_dim=256,
+        num_layers=2,
+        embed_dim=32,
+        use_projection=False,
     ):
         super().__init__()
         self.use_projection = use_projection

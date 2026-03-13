@@ -127,12 +127,13 @@ def train(args):
     # 4. Save
     # When early_stopping_rounds is used, save_model saves the trees up to the best iteration
     # (plus the patience window), but metadata marks the best iteration.
-    model_path = os.path.join(args.save_dir, f"{args.domain}_xgb.json")
+    model_path = os.path.join(args.save_dir, f"{args.domain}_xgb_seed{args.seed}.ubj")
     model.save_model(model_path)
     print(f"Saved model to {model_path}")
 
     # 5. Save Metadata
     meta = {
+        "seed": args.seed,
         "input_dim": X_train.shape[1],
         "output_dim": y_train.shape[1],
         "delta": args.delta,
@@ -142,7 +143,12 @@ def train(args):
         "learning_rate": args.lr,
         "best_iteration": getattr(model, "best_iteration", -1),
     }
-    with open(os.path.join(args.save_dir, f"{args.domain}_xgb_meta.pkl"), "wb") as f:
+
+    # Update the filename to include the seed
+    meta_path = os.path.join(
+        args.save_dir, f"{args.domain}_xgb_meta_seed{args.seed}.pkl"
+    )
+    with open(meta_path, "wb") as f:
         pickle.dump(meta, f)
 
 
@@ -173,7 +179,7 @@ if __name__ == "__main__":
         action="store_true",
         help="Flag to whether perform delta-based preds.",
     )
-    parser.add_argument("--seed", type=int, default=13)
+    parser.add_argument("--seed", type=int, default=15)
     args = parser.parse_args()
 
     train(args)

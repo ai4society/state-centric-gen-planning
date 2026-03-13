@@ -246,7 +246,7 @@ def run_inference(args):
     print(f"Loading LSTM from {args.checkpoint}...")
 
     # Determine projection usage
-    use_projection = not args.no_projection
+    use_projection = args.use_projection
 
     if args.delta:
         model = StateCentricLSTM_Delta(
@@ -358,9 +358,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--no_projection",
         action="store_true",
-        help="If set, disables the input projection layer (must match training)",
+        help="Legacy flag. Projection is now disabled by default.",
     )
-    parser.add_argument("--seed", type=int, default=13, help="Random seed")
+    parser.add_argument(
+        "--use_projection",
+        action="store_true",
+        help="If set, enables the input projection layer (must match training)",
+    )
+    parser.add_argument("--seed", type=int, default=15, help="Random seed")
 
     HOME = os.path.expanduser("~")
     ROOT_DIR = f"{HOME}/planning/"

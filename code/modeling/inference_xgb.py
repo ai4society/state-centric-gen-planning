@@ -248,7 +248,9 @@ def run_inference(args):
     print(f"Using device: {device}")
 
     # 0. Load Metadata to determine encoding
-    meta_path = os.path.join(args.checkpoint_dir, f"{args.domain}_xgb_meta.pkl")
+    meta_path = os.path.join(
+        args.checkpoint_dir, f"{args.domain}_xgb_meta_seed{args.seed}.pkl"
+    )
     if not os.path.exists(meta_path):
         print(f"Error: Metadata not found at {meta_path}. Cannot determine encoding.")
         return
@@ -306,7 +308,9 @@ def run_inference(args):
         pred_map = {p.name: p for p in wl_domain.predicates}
 
     # 2. Load XGBoost
-    xgb_path = os.path.join(args.checkpoint_dir, f"{args.domain}_xgb.json")
+    xgb_path = os.path.join(
+        args.checkpoint_dir, f"{args.domain}_xgb_seed{args.seed}.ubj"
+    )
     print(f"Loading XGBoost from {xgb_path}...")
 
     model = xgb.XGBRegressor(device=device)
@@ -401,7 +405,7 @@ if __name__ == "__main__":
     parser.add_argument("--beam_width", type=int, default=3, help="Search beam width")
     parser.add_argument("--delta", action="store_true")
     parser.add_argument("--tag", default="state")
-    parser.add_argument("--seed", type=int, default=13)
+    parser.add_argument("--seed", type=int, default=15)
 
     HOME = os.path.expanduser("~")
     ROOT_DIR = f"{HOME}/planning/"

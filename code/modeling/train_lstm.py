@@ -151,7 +151,7 @@ def train(args):
     print(f"Feature Dimension: {input_dim}")
 
     # 2. Model
-    use_projection = not args.no_projection
+    use_projection = args.use_projection
 
     if args.delta:
         model = StateCentricLSTM_Delta(
@@ -272,7 +272,9 @@ def train(args):
             best_val_loss = avg_val_loss
             torch.save(
                 model.state_dict(),
-                os.path.join(args.save_dir, f"{args.domain}_lstm_best.pt"),
+                os.path.join(
+                    args.save_dir, f"{args.domain}_lstm_best_seed{args.seed}.pt"
+                ),
             )
             print(
                 f"  -> Saved Best Model to {os.path.join(args.save_dir, f'{args.domain}_lstm_best.pt')}"
@@ -282,7 +284,9 @@ def train(args):
         if (epoch + 1) % 10 == 0:
             torch.save(
                 model.state_dict(),
-                os.path.join(args.save_dir, f"{args.domain}_lstm_last.pt"),
+                os.path.join(
+                    args.save_dir, f"{args.domain}_lstm_last_seed{args.seed}.pt"
+                ),
             )
 
 
@@ -307,9 +311,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--no_projection",
         action="store_true",
-        help="If set, disables the input projection layer (uses raw input dim)",
+        help="Legacy flag. Projection is now disabled by default.",
     )
-    parser.add_argument("--seed", type=int, default=13, help="Random seed")
+    parser.add_argument(
+        "--use_projection",
+        action="store_true",
+        help="If set, enables the input projection layer (High-Dim Sparse -> Low-Dim Dense)",
+    )
+    parser.add_argument("--seed", type=int, default=15, help="Random seed")
     args = parser.parse_args()
 
     train(args)

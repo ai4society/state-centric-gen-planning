@@ -31,7 +31,7 @@ HIDDEN_DIM=${HIDDEN_DIM:-256}
 LR=${LR:-1e-2}
 MAX_DEPTH=${MAX_DEPTH:-8}
 NO_PROJ=${NO_PROJ:-"true"} # "true" to disable LSTM projection layer
-SEED=${SEED:-13}
+SEED=${SEED:-15}
 
 # SETUP
 echo "Job started on $(hostname) at $(date)"
@@ -121,7 +121,7 @@ for MODEL in $TARGET_MODELS; do
 
             # LSTM INFERENCE
             echo "[LSTM] Inference..."
-            BEST_PT="${CHECKPOINT_DIR}/${DOMAIN}_lstm_best.pt"
+            BEST_PT="${CHECKPOINT_DIR}/${DOMAIN}_lstm_best_seed${SEED}.pt"
             if [ -f "$BEST_PT" ]; then
                 uv run python -m code.modeling.inference_lstm \
                     --domain "$DOMAIN" \
@@ -154,8 +154,9 @@ for MODEL in $TARGET_MODELS; do
 
             # XGBOOST INFERENCE
             echo "[XGB] Inference..."
-            # XGB saves .json models
-            if [ -f "${CHECKPOINT_DIR}/${DOMAIN}_xgb.json" ]; then
+            # XGB saves .ubj models
+            XGB_MODEL="${CHECKPOINT_DIR}/${DOMAIN}_xgb_seed${SEED}.ubj"
+            if[ -f "$XGB_MODEL" ]; then
                 uv run python -m code.modeling.inference_xgb \
                     --domain "$DOMAIN" \
                     --checkpoint_dir "$CHECKPOINT_DIR" \

@@ -156,7 +156,7 @@ for MODEL in $TARGET_MODELS; do
             echo "[XGB] Inference..."
             # XGB saves .ubj models
             XGB_MODEL="${CHECKPOINT_DIR}/${DOMAIN}_xgb_seed${SEED}.ubj"
-            if[ -f "$XGB_MODEL" ]; then
+            if [ -f "$XGB_MODEL" ]; then
                 uv run python -m code.modeling.inference_xgb \
                     --domain "$DOMAIN" \
                     --checkpoint_dir "$CHECKPOINT_DIR" \

@@ -88,9 +88,6 @@ def evaluate(model, val_loader, device, delta):
 
 def train(args):
     set_seed(args.seed)
-    use_proj_str = "Enabled" if not args.no_projection else "Disabled"
-    print(f"Training using {'Delta Prediction' if args.delta else 'State Prediction'}")
-    print(f"Projection Layer: {use_proj_str}")
 
     # cuda -> metal -> cpu
     device = torch.device(
@@ -151,16 +148,10 @@ def train(args):
     print(f"Feature Dimension: {input_dim}")
 
     # 2. Model
-    use_projection = args.use_projection
-
     if args.delta:
-        model = StateCentricLSTM_Delta(
-            input_dim, hidden_dim=args.hidden_dim, use_projection=use_projection
-        ).to(device)
+        model = StateCentricLSTM_Delta(input_dim, hidden_dim=args.hidden_dim).to(device)
     else:
-        model = StateCentricLSTM(
-            input_dim, hidden_dim=args.hidden_dim, use_projection=use_projection
-        ).to(device)
+        model = StateCentricLSTM(input_dim, hidden_dim=args.hidden_dim).to(device)
 
     num_params = count_parameters(model)
     print(f"Model Parameters: {num_params:,}")
@@ -307,16 +298,6 @@ if __name__ == "__main__":
         "--delta",
         action="store_true",
         help="Flag to whether perform delta-based preds. Def. is False",
-    )
-    parser.add_argument(
-        "--no_projection",
-        action="store_true",
-        help="Legacy flag. Projection is now disabled by default.",
-    )
-    parser.add_argument(
-        "--use_projection",
-        action="store_true",
-        help="If set, enables the input projection layer (High-Dim Sparse -> Low-Dim Dense)",
     )
     parser.add_argument("--seed", type=int, default=15, help="Random seed")
     args = parser.parse_args()

@@ -1,0 +1,81 @@
+[
+  {
+    "problem": "balls03.pddl",
+    "search_solved": true,
+    "plan_len": 9,
+    "plan": [
+      "(pick ball1 rooma left)",
+      "(pick ball2 rooma right)",
+      "(move rooma roomb)",
+      "(drop ball1 roomb left)",
+      "(drop ball2 roomb right)",
+      "(move roomb rooma)",
+      "(pick ball3 rooma left)",
+      "(move rooma roomb)",
+      "(drop ball3 roomb left)"
+    ],
+    "val_solved": true,
+    "val_executable": true,
+    "solved": true
+  },
+  {
+    "problem": "balls05.pddl",
+    "search_solved": true,
+    "plan_len": 17,
+    "plan": [
+      "(pick ball1 rooma left)",
+      "(pick ball2 rooma right)",
+      "(move rooma roomb)",
+      "(drop ball1 roomb left)",
+      "(drop ball2 roomb right)",
+      "(move roomb rooma)",
+      "(pick ball3 rooma left)",
+      "(move rooma roomb)",
+      "(drop ball3 roomb left)",
+      "(move roomb rooma)",
+      "(pick ball4 rooma left)",
+      "(move rooma roomb)",
+      "(drop ball4 roomb left)",
+      "(move roomb rooma)",
+      "(pick ball5 rooma left)",
+      "(move rooma roomb)",
+      "(drop ball5 roomb left)"
+    ],
+    "val_solved": true,
+    "val_executable": true,
+    "solved": true
+  },
+  {
+    "problem": "balls07.pddl",
+    "search_solved": true,
+    "plan_len": 23,
+    "plan": [
+      "(pick ball1 rooma left)",
+      "(pick ball2 rooma right)",
+      "(move rooma roomb)",
+      "(drop ball1 roomb left)",
+      "(drop ball2 roomb right)",
+      "(move roomb rooma)",
+      "(pick ball3 rooma left)",
+      "(pick ball4 rooma right)",
+      "(move rooma roomb)",
+      "(drop ball3 roomb left)",
+      "(drop ball4 roomb right)",
+      "(move roomb rooma)",
+      "(pick ball5 rooma left)",
+      "(move rooma roomb)",
+      "(drop ball5 roomb left)",
+      "(move roomb rooma)",
+      "(pick ball6 rooma left)",
+      "(move rooma roomb)",
+      "(drop ball6 roomb left)",
+      "(move roomb rooma)",
+      "(pick ball7 rooma left)",
+      "(move rooma roomb)",
+      "(drop ball7 roomb left)"
+    ],
+    "val_solved": true,
+    "val_executable": true,
+    "solved": true
+  }
+]

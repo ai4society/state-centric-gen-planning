@@ -2,7 +2,7 @@
   {
     "problem": "probBLOCKS-5-0.pddl",
     "search_solved": false,
-    "plan_len": 32,
+    "plan_len": 36,
     "plan": [
       "(unstack c e)",
       "(put-down c)",
@@ -35,7 +35,11 @@
       "(pick-up b)",
       "(stack b a)",
       "(pick-up e)",
-      "(stack e b)"
+      "(stack e c)",
+      "(unstack b a)",
+      "(put-down b)",
+      "(pick-up a)",
+      "(stack a b)"
     ],
     "val_solved": false,
     "val_executable": true,
@@ -44,10 +48,8 @@
   {
     "problem": "probBLOCKS-5-1.pddl",
     "search_solved": false,
-    "plan_len": 28,
+    "plan_len": 26,
     "plan": [
-      "(pick-up c)",
-      "(put-down c)",
       "(unstack b a)",
       "(put-down b)",
       "(pick-up c)",
@@ -82,7 +84,7 @@
   {
     "problem": "probBLOCKS-5-2.pddl",
     "search_solved": false,
-    "plan_len": 24,
+    "plan_len": 22,
     "plan": [
       "(unstack d e)",
       "(put-down d)",
@@ -98,16 +100,14 @@
       "(put-down e)",
       "(unstack a b)",
       "(put-down a)",
-      "(pick-up e)",
-      "(stack e a)",
       "(pick-up b)",
-      "(stack b c)",
-      "(unstack e a)",
-      "(put-down e)",
-      "(pick-up a)",
-      "(stack a b)",
+      "(stack b a)",
       "(pick-up e)",
-      "(stack e a)"
+      "(stack e c)",
+      "(unstack b a)",
+      "(put-down b)",
+      "(pick-up a)",
+      "(stack a b)"
     ],
     "val_solved": false,
     "val_executable": true,

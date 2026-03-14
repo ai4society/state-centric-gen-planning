@@ -1,0 +1,178 @@
+[
+  {
+    "problem": "prob05.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob06.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob07.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob08.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob09.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob10.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob11.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob12.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob13.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob14.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob15.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob16.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob17.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob18.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob19.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "prob20.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  }
+]

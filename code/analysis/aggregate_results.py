@@ -2,16 +2,23 @@ import argparse
 import json
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 
-def parse_filename(filename: str) -> dict[str, str | float] | None:
+def parse_filename(filename: str):
     """
-    Parses filenames to extract experiment metadata.
-    Handles: {domain}_{encoding}_{split}_{tag}_{seed}_results.json
+    Parses filenames to extract experiment metadata including the seed.
+    Example: visitall-from-everywhere_fsf_validation_state_seed13_results.json
     """
-    # Remove extension
     stem = filename.replace("_results.json", "")
+
+    # Extract seed
+    seed = None
+    if "_seed" in stem:
+        parts = stem.split("_seed")
+        seed = int(parts[1])
+        stem = parts[0]
 
     # Identify Split
     splits = ["validation", "test-interpolation", "test-extrapolation"]
@@ -26,11 +33,10 @@ def parse_filename(filename: str) -> dict[str, str | float] | None:
 
     # Split string: [Prefix]_[Split]_[Suffix]
     parts = stem.split(f"_{found_split}")
-    prefix = parts[0]  # domain_encoding
-    suffix = parts[1] if len(parts) > 1 else ""  # _tag
+    prefix = parts[0]
+    suffix = parts[1] if len(parts) > 1 else ""
 
-    # 1. Extract Domain and Encoding
-    # Heuristic: Encoding is usually 'graphs' or 'fsf' at the end of prefix
+    # Extract Domain and Encoding
     if prefix.endswith("_graphs"):
         encoding = "graphs"
         domain = prefix.replace("_graphs", "")
@@ -38,47 +44,41 @@ def parse_filename(filename: str) -> dict[str, str | float] | None:
         encoding = "fsf"
         domain = prefix.replace("_fsf", "")
     else:
-        # Fallback or unknown encoding
         encoding = "unknown"
         domain = prefix
 
-    # 2. Extract Mode from Suffix
+    # Extract Mode
     mode = "state"
-    if "delta" in suffix:
+    if "_delta" in suffix:
         mode = "delta"
 
-    return {"Domain": domain, "Encoding": encoding, "Split": found_split, "Mode": mode}
+    return {
+        "Domain": domain,
+        "Encoding": encoding,
+        "Split": found_split,
+        "Mode": mode,
+        "Seed": seed,
+    }
 
 
-def aggregate(results_dir):
-    data_records = []
-
+def aggregate_seeds(results_dir):
     path = Path(results_dir)
-
-    # Recursively find all result JSONs
     json_files = list(path.rglob("*_results.json"))
 
-    print(f"Found {len(json_files)} result files in `{results_dir}`")
-
-    for i, jf in enumerate(json_files):
+    records = []
+    for jf in json_files:
         meta = parse_filename(jf.name)
         if not meta:
-            print(f"Skipping {jf.name} (could not parse filename structure)")
             continue
 
-        # Determine Model from directory structure if possible, else assume from path
-        # Structure: results/<encoding>/<model>_<mode>/...
-        # We can try to infer model from parent dir name
-        parent_dir = jf.parent.name.lower()  # e.g., "lstm_delta" or "xgboost_state"
+        # Infer model from parent directory
+        parent_dir = jf.parent.name.lower()
         if "lstm" in parent_dir:
             model = "LSTM"
         elif "xgboost" in parent_dir or "xgb" in parent_dir:
             model = "XGB"
         else:
             model = "Unknown"
-        print(
-            f"Processing {i + 1}/{len(json_files)}: {jf.name} | Model: {model}, Domain: {meta['Domain']}, Encoding: {meta['Encoding']}, Split: {meta['Split']}, Mode: {meta['Mode']}"
-        )
 
         try:
             with open(jf, "r") as f:
@@ -90,74 +90,104 @@ def aggregate(results_dir):
 
             # Count solved based on VAL
             solved = sum(1 for r in results if r.get("val_solved", False))
-
-            # Calculate Coverage
             coverage = solved / total
 
-            record = meta.copy()
-            record["Model"] = model
-            record["Coverage"] = float(coverage)
-            data_records.append(record)
-
+            meta["Model"] = model
+            meta["Coverage"] = float(coverage)
+            records.append(meta)
         except Exception as e:
             print(f"Error reading {jf}: {e}")
 
-    return pd.DataFrame(data_records)
+    return pd.DataFrame(records)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Aggregate Generalized Planning Results"
+        description="Aggregate Generalized Planning Results across Seeds"
     )
     parser.add_argument(
-        "--results_dir",
-        default="results",
-        help="Path to results root. Default: `results`",
-    )
-    parser.add_argument("--format", choices=["csv", "markdown"], default="markdown")
-    parser.add_argument(
-        "--output", help="Path to save the output file. Default: None", default=None
+        "--results_dir", default="results", help="Path to results root."
     )
     args = parser.parse_args()
 
-    df = aggregate(args.results_dir)
-
+    df = aggregate_seeds(args.results_dir)
     if df.empty:
         print("No results found.")
         return
 
-    # Pivot for better readability (Rows: Domain/Split, Cols: Model Config)
-    # Create a configuration column
-    df["Config"] = df["Encoding"] + "-" + df["Model"] + "-" + df["Mode"]
-
-    pivot_df = df.pivot_table(
-        index=["Domain", "Split"],
-        columns="Config",
-        values="Coverage",
-        aggfunc="max",  # In case of duplicates, take max
+    # Calculate Mean and Std (Population Std Dev ddof=0 to match Excel's STDEV.P)
+    grouped = (
+        df.groupby(["Domain", "Split", "Encoding", "Model", "Mode"])["Coverage"]
+        .agg(Mean="mean", Std=lambda x: np.std(x, ddof=0))
+        .reset_index()
     )
 
-    # Sort index to match paper order usually
-    pivot_df = pivot_df.sort_index(level=0)
+    # Format as "Mean ± Std"
+    grouped["Formatted"] = grouped.apply(
+        lambda row: f"{row['Mean']:.2f} ± {row['Std']:.2f}", axis=1
+    )
 
-    # Generate String Representation
-    if args.format == "markdown":
-        output_str = pivot_df.to_markdown()
-    else:
-        output_str = pivot_df.to_csv()
+    # Create Config column for pivot (e.g., "WL-LSTM State")
+    enc_map = {"graphs": "WL", "fsf": "FSF"}
+    grouped["Config"] = (
+        grouped["Encoding"].map(enc_map)
+        + "-"
+        + grouped["Model"]
+        + " "
+        + grouped["Mode"].str.capitalize()
+    )
 
-    print("\n=== Aggregated Results ===\n")
-    print(output_str)
+    pivot_df = grouped.pivot_table(
+        index=["Domain", "Split"], columns="Config", values="Formatted", aggfunc="first"
+    ).fillna("0.00 ± 0.00")
 
-    # Save to File
-    if args.output:
-        # Ensure directory exists
-        output_path = Path(args.output)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+    # Define desired column order
+    cols_order = [
+        "WL-LSTM State",
+        "WL-LSTM Delta",
+        "WL-XGB State",
+        "WL-XGB Delta",
+        "FSF-LSTM State",
+        "FSF-LSTM Delta",
+        "FSF-XGB State",
+        "FSF-XGB Delta",
+    ]
+    # Filter to only columns that exist in the data
+    cols_order = [c for c in cols_order if c in pivot_df.columns]
+    pivot_df = pivot_df[cols_order]
 
-        with open(output_path, "w") as f:
-            f.write(output_str)
-        print(f"\nResults saved to: {output_path}")
+    # Define desired row order
+    domain_order = ["blocks", "gripper", "visitall-from-everywhere", "logistics"]
+    split_order = ["validation", "test-interpolation", "test-extrapolation"]
+
+    # Reorder rows by sorting explicit categorical columns (robust for MultiIndex)
+    pivot_df = pivot_df.reset_index()
+    pivot_df["Domain"] = pd.Categorical(
+        pivot_df["Domain"], categories=domain_order, ordered=True
+    )
+    pivot_df["Split"] = pd.Categorical(
+        pivot_df["Split"], categories=split_order, ordered=True
+    )
+    pivot_df = pivot_df.sort_values(["Domain", "Split"]).set_index(["Domain", "Split"])
+
+    # Rename indices for a cleaner look
+    domain_rename = {
+        "blocks": "Blocks",
+        "gripper": "Gripper",
+        "visitall-from-everywhere": "VisitAll",
+        "logistics": "Logistics",
+    }
+    split_rename = {
+        "validation": "Val.",
+        "test-interpolation": "Interp.",
+        "test-extrapolation": "Extrap.",
+    }
+
+    pivot_df.rename(index=domain_rename, level=0, inplace=True)
+    pivot_df.rename(index=split_rename, level=1, inplace=True)
+
+    print("\n=== Aggregated Results (Mean ± Std) ===\n")
+    print(pivot_df.to_markdown())
 
 
 if __name__ == "__main__":

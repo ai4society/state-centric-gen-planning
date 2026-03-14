@@ -45,6 +45,14 @@ uv sync
 pip install -r requirements.txt
 ```
 
+### 0. Pre-trained Models
+
+Due to file size constraints, model checkpoints (LSTM and XGBoost) are hosted on GitHub Releases. You can download them manually from the [Releases page](https://github.com/ai4society/state-centric-gen-planning/releases) or use the provided script:
+
+```bash
+./code/common/download_checkpoints.sh
+```
+
 ### 1. Data Generation
 
 The entire data generation pipeline can be run with the `1_data_pipeline.slurm` shell script, which is ideal for cluster execution. Alternatively, you can run the individual python modules locally to generate plans, reconstruct state trajectories, and compute graph embeddings:

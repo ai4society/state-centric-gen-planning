@@ -1,0 +1,35 @@
+[
+  {
+    "problem": "balls03.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "balls05.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "balls07.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  }
+]

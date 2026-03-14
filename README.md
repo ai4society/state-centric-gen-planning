@@ -84,13 +84,13 @@ python -m code.modeling.inference_lstm \
 
 ### 3. Automated Results Aggregation
 
-For the aggregation step, execute the following command locally to parse the inference logs and generate a markdown table, or a csv, summarizing the coverage results:
+For the aggregation step, execute the following command locally to parse the inference logs and generate a markdown table summarizing the coverage results:
 
 ```bash
 # Assumes uv environment is activated. If using pip, ensure you have the required dependencies installed.
 
 # Generate the results table (Coverage %) from the inference logs to markdown format
-python -m code.analysis.aggregate_results --format markdown
+python -m code.analysis.aggregate_results
 ```
 
 Note that this step should be performed after all inference runs are complete, as it reads the JSON logs generated during inference to compute the final coverage metrics.

@@ -1,0 +1,24 @@
+[
+  {
+    "problem": "balls09.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "balls10.pddl",
+    "search_solved": false,
+    "plan_len": 1,
+    "plan": [
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  }
+]

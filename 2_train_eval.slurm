@@ -17,20 +17,28 @@
 
 # 1. Which Models and Encodings to run? (Space separated: "lstm" "xgboost" "llama")
 # Can override this by passing arguments to sbatch, e.g.:
-# `sbatch script.slurm "lstm"`
+# sbatch script.slurm "lstm"
 TARGET_MODELS=${1:-"lstm xgboost"}
 ENCODING=${2:-"graphs"} # "graphs" or "fsf"
 
-# 2. Which Modes? ("state" "delta")
-TARGET_MODES=("state" "delta")
+# 2. Which Modes? (space-separated string, e.g. "state delta")
+# Can override with arg 3, e.g.:
+# sbatch script.slurm "lstm xgboost" "graphs" "state"
+TARGET_MODES_STR=${3:-"state delta"}
+read -r -a TARGET_MODES <<< "$TARGET_MODES_STR"
 
-# 3. Hyperparameters (override via env: EPOCHS=100 sbatch ...)
+# 3. Which Domains? (space-separated string)
+# Can override with arg 4, e.g.:
+# sbatch script.slurm "lstm" "graphs" "state delta" "blocks gripper"
+TARGET_DOMAINS_STR=${4:-"blocks gripper logistics visitall-from-everywhere"}
+read -r -a DOMAINS <<< "$TARGET_DOMAINS_STR"
+
+# 4. Hyperparameters (override via env: EPOCHS=100 sbatch ...)
 EPOCHS=${EPOCHS:-500}
 BATCH_SIZE=${BATCH_SIZE:-32}
 HIDDEN_DIM=${HIDDEN_DIM:-256}
 LR=${LR:-1e-2}
 MAX_DEPTH=${MAX_DEPTH:-8}
-NO_PROJ=${NO_PROJ:-"true"} # "true" to disable LSTM projection layer
 SEED=${SEED:-15}
 
 # SETUP
@@ -45,11 +53,11 @@ export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 mkdir -p slurm-out
 
 # Map array index to domain
-DOMAINS=("blocks" "gripper" "logistics" "visitall-from-everywhere")
-DOMAIN=${DOMAINS[$SLURM_ARRAY_TASK_ID]}
+TASK_ID=${SLURM_ARRAY_TASK_ID:-0}
+DOMAIN=${DOMAINS[$TASK_ID]}
 
 if [ -z "$DOMAIN" ]; then
-    echo "Error: Invalid SLURM_ARRAY_TASK_ID=$SLURM_ARRAY_TASK_ID"
+    echo "Error: Invalid task index ($TASK_ID) for domains: ${DOMAINS[*]}"
     exit 1
 fi
 
@@ -57,6 +65,7 @@ DATA_DIR="data/encodings/$ENCODING"
 
 echo " CONFIGURATION SUMMARY"
 echo " Domain:    $DOMAIN"
+echo " Domains:   ${DOMAINS[*]}"
 echo " Encoding:  $ENCODING"
 echo " Models:    $TARGET_MODELS"
 echo " Modes:     ${TARGET_MODES[*]}"
@@ -65,7 +74,6 @@ echo " Epochs/Num Estimators:    $EPOCHS"
 echo " Batch Sz:  $BATCH_SIZE"
 echo " HiddenDim: $HIDDEN_DIM"
 echo " LR:        $LR"
-echo " No Proj:   $NO_PROJ"
 echo " Seed:      $SEED"
 
 # EXECUTION LOOP
@@ -89,13 +97,6 @@ for MODEL in $TARGET_MODELS; do
             DELTA_FLAG=""
         fi
 
-        # Set Projection Flag (Only for LSTM)
-        if [ "$NO_PROJ" == "true" ]; then
-            PROJ_FLAG="--no_projection"
-        else
-            PROJ_FLAG=""
-        fi
-
         echo ""
         echo "**********************************"
         echo " RUNNING: $MODEL | MODE: $MODE"
@@ -116,8 +117,7 @@ for MODEL in $TARGET_MODELS; do
                 --hidden_dim "$HIDDEN_DIM" \
                 --lr "$LR" \
                 --seed "$SEED" \
-                $DELTA_FLAG \
-                $PROJ_FLAG
+                $DELTA_FLAG
 
             # LSTM INFERENCE
             echo "[LSTM] Inference..."
@@ -131,7 +131,6 @@ for MODEL in $TARGET_MODELS; do
                     --hidden_dim "$HIDDEN_DIM" \
                     --seed "$SEED" \
                     $DELTA_FLAG \
-                    $PROJ_FLAG \
                     --tag "$MODE"
             else
                 echo "Skipping Inference: Checkpoint not found ($BEST_PT)"

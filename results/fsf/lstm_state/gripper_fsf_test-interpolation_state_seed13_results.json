@@ -1,0 +1,53 @@
+[
+  {
+    "problem": "balls03.pddl",
+    "search_solved": false,
+    "plan_len": 3,
+    "plan": [
+      "(pick ball1 rooma left)",
+      "(drop ball1 rooma left)",
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "balls05.pddl",
+    "search_solved": false,
+    "plan_len": 3,
+    "plan": [
+      "(pick ball1 rooma left)",
+      "(drop ball1 rooma left)",
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  },
+  {
+    "problem": "balls07.pddl",
+    "search_solved": false,
+    "plan_len": 15,
+    "plan": [
+      "(pick ball7 rooma left)",
+      "(move rooma roomb)",
+      "(drop ball7 roomb left)",
+      "(move roomb rooma)",
+      "(pick ball5 rooma left)",
+      "(move rooma roomb)",
+      "(drop ball5 roomb left)",
+      "(pick ball7 roomb left)",
+      "(move roomb rooma)",
+      "(drop ball7 rooma left)",
+      "(move rooma roomb)",
+      "(pick ball5 roomb left)",
+      "(move roomb rooma)",
+      "(drop ball5 rooma left)",
+      "(move rooma roomb)"
+    ],
+    "val_solved": false,
+    "val_executable": true,
+    "solved": false
+  }
+]

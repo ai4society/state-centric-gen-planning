@@ -97,6 +97,10 @@ def solve_problem(
         print(f"Pyperplan Parsing Error on {prob_file}: {e}")
         raise e
 
+    # Dynamically upper-bound max_steps based on problem size
+    num_objects = len(prob.objects) + len(dom.constants)
+    dynamic_max_steps = max(max_steps, 10 * num_objects)
+
     initial_atoms = task.initial_state
     goal_set = set(task.goals)
 
@@ -142,7 +146,7 @@ def solve_problem(
 
     beam = [(0.0, init_vec, initial_atoms, [], visited_set)]
 
-    for _ in range(max_steps):
+    for _ in range(dynamic_max_steps):
         candidates = []
 
         for score, current_vec, current_atoms, plan, visited in beam:

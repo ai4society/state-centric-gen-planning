@@ -1,16 +1,16 @@
+import argparse
 import json
 import os
-from transformers import RobertaTokenizer, T5ForConditionalGeneration
-import torch
-from torch import cuda
-import argparse
+import re
+from code.common.utils import validate_plan
+from pathlib import Path
 from typing import (
     List,
 )
 
-from pathlib import Path
-import re
-from code.common.utils import validate_plan
+import torch
+from torch import cuda
+from transformers import RobertaTokenizer, T5ForConditionalGeneration
 
 
 def find_parens(s):
@@ -324,7 +324,7 @@ def inference(
             generated_ids = model.generate(
                 input_ids,
                 num_beams=2,
-                max_length=input_ids.shape[-1] + 2,
+                max_length=input_ids.shape[-1] + 512,
                 repetition_penalty=2.5,
                 length_penalty=1.0,
                 early_stopping=False,

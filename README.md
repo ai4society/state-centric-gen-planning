@@ -112,7 +112,13 @@ Note that this step should be performed after all inference runs are complete, a
 
 ## Acknowledgments
 
-This project used the [Fast Downward planner](https://github.com/aibasel/downward) for plan generation and the [VAL tool](https://github.com/KCL-Planning/VAL) for plan validation. We also thank the [WLPlan library](https://github.com/DillonZChen/wlplan) specifically for providing a powerful tool for state encoding. Lastly, we also thank all other libraries and tools used in this project (detailed in `pyproject.toml`).
+This repository relies on several excellent open-source tools:
+- [Fast Downward](https://github.com/aibasel/downward) for generating expert training plans.
+- [VAL](https://github.com/KCL-Planning/VAL) for plan validation and state trajectory reconstruction.
+- [Pyperplan](https://github.com/aibasel/pyperplan) for lightweight PDDL parsing, grounding, and symbolic successor generation during neural inference.
+- [wlplan](https://github.com/DillonZChen/wlplan) for Weisfeiler-Leman graph embeddings.
+
+Lastly, we also thank all other libraries and tools used in this project (detailed in `pyproject.toml`).
 
 Do note that this project uses a forked version of WLPlan, which we modified to work on MacOS systems. The fork can be found at [https://github.com/g-nitin/wlplan](https://github.com/g-nitin/wlplan).
 

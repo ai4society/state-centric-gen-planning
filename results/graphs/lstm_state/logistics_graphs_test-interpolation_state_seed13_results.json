@@ -281,8 +281,8 @@
   },
   {
     "problem": "p04g04-3.pddl",
-    "search_solved": false,
-    "plan_len": 100,
+    "search_solved": true,
+    "plan_len": 113,
     "plan": [
       "(load-airplane p3 a0 l0-0)",
       "(drive-truck t1 l1-0 l1-1 c1)",
@@ -383,11 +383,24 @@
       "(drive-truck t0 l0-0 l0-1 c0)",
       "(load-truck p1 t0 l0-1)",
       "(drive-truck t0 l0-1 l0-0 c0)",
-      "(drive-truck t1 l1-0 l1-1 c1)"
+      "(drive-truck t1 l1-0 l1-1 c1)",
+      "(drive-truck t0 l0-0 l0-1 c0)",
+      "(fly-airplane a0 l0-0 l1-0)",
+      "(drive-truck t0 l0-1 l0-0 c0)",
+      "(drive-truck t1 l1-1 l1-0 c1)",
+      "(load-airplane p0 a0 l1-0)",
+      "(unload-truck p1 t0 l0-0)",
+      "(drive-truck t0 l0-0 l0-1 c0)",
+      "(drive-truck t1 l1-0 l1-1 c1)",
+      "(drive-truck t0 l0-1 l0-0 c0)",
+      "(fly-airplane a0 l1-0 l0-0)",
+      "(drive-truck t0 l0-0 l0-1 c0)",
+      "(drive-truck t1 l1-1 l1-0 c1)",
+      "(unload-airplane p0 a0 l0-0)"
     ],
-    "val_solved": false,
+    "val_solved": true,
     "val_executable": true,
-    "solved": false
+    "solved": true
   },
   {
     "problem": "probLOGISTICS-4-0.pddl",
@@ -571,8 +584,8 @@
   },
   {
     "problem": "probLOGISTICS-4-2.pddl",
-    "search_solved": false,
-    "plan_len": 100,
+    "search_solved": true,
+    "plan_len": 124,
     "plan": [
       "(load-truck obj12 tru1 pos1)",
       "(load-truck obj11 tru1 pos1)",
@@ -673,10 +686,34 @@
       "(unload-airplane obj21 apn1 apt1)",
       "(drive-truck tru1 apt1 pos1 cit1)",
       "(drive-truck tru2 apt2 pos2 cit2)",
-      "(drive-truck tru1 pos1 apt1 cit1)"
+      "(drive-truck tru1 pos1 apt1 cit1)",
+      "(fly-airplane apn1 apt1 apt2)",
+      "(drive-truck tru1 apt1 pos1 cit1)",
+      "(drive-truck tru2 pos2 apt2 cit2)",
+      "(drive-truck tru1 pos1 apt1 cit1)",
+      "(unload-truck obj23 tru1 apt1)",
+      "(fly-airplane apn1 apt2 apt1)",
+      "(load-airplane obj23 apn1 apt1)",
+      "(drive-truck tru1 apt1 pos1 cit1)",
+      "(drive-truck tru2 apt2 pos2 cit2)",
+      "(drive-truck tru1 pos1 apt1 cit1)",
+      "(fly-airplane apn1 apt1 apt2)",
+      "(drive-truck tru1 apt1 pos1 cit1)",
+      "(drive-truck tru2 pos2 apt2 cit2)",
+      "(drive-truck tru1 pos1 apt1 cit1)",
+      "(unload-airplane obj23 apn1 apt2)",
+      "(load-truck obj23 tru2 apt2)",
+      "(drive-truck tru1 apt1 pos1 cit1)",
+      "(drive-truck tru2 apt2 pos2 cit2)",
+      "(drive-truck tru1 pos1 apt1 cit1)",
+      "(fly-airplane apn1 apt2 apt1)",
+      "(drive-truck tru2 pos2 apt2 cit2)",
+      "(drive-truck tru1 apt1 pos1 cit1)",
+      "(drive-truck tru2 apt2 pos2 cit2)",
+      "(unload-truck obj23 tru2 pos2)"
     ],
-    "val_solved": false,
+    "val_solved": true,
     "val_executable": true,
-    "solved": false
+    "solved": true
   }
 ]

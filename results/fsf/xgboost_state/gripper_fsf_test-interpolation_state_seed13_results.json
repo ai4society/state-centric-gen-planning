@@ -144,7 +144,7 @@
   {
     "problem": "balls07.pddl",
     "search_solved": false,
-    "plan_len": 100,
+    "plan_len": 110,
     "plan": [
       "(pick ball7 rooma left)",
       "(pick ball1 rooma right)",
@@ -245,7 +245,17 @@
       "(drop ball6 rooma left)",
       "(pick ball2 rooma left)",
       "(move rooma roomb)",
-      "(drop ball1 roomb right)"
+      "(drop ball1 roomb right)",
+      "(move roomb rooma)",
+      "(drop ball2 rooma left)",
+      "(pick ball6 rooma left)",
+      "(move rooma roomb)",
+      "(drop ball6 roomb left)",
+      "(pick ball1 roomb right)",
+      "(move roomb rooma)",
+      "(pick ball2 rooma left)",
+      "(drop ball1 rooma right)",
+      "(move rooma roomb)"
     ],
     "val_solved": false,
     "val_executable": true,

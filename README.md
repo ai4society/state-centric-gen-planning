@@ -103,12 +103,20 @@ python -m code.analysis.aggregate_results
 
 Note that this step should be performed after all inference runs are complete, as it reads the JSON logs generated during inference to compute the final coverage metrics.
 
+> **Reproducing Table 1.** Coverage depends on the size-dependent inference
+> horizon `max(100, 10 * |O|)`, added in commit `e8a4fdc`. Result JSONs released
+> in `v1.0.0` used a fixed 100-step horizon and under-report coverage in the
+> extrapolation cells; the paper's numbers are unaffected. The current `results/`
+> use the fix and reproduce the published Table 1. The pre-fix files are archived
+> under `changelog/v0-original-2026-03-14/`. See `CHANGELOG.md`.
+
 ## Repository Structure
 
 - `code/`: Source code for data generation, modeling, and analysis.
 - `data/`: Stores PDDL, plans, state trajectories, and vector encodings.
 - `checkpoints/`: Saved model weights.
 - `results/`: JSON logs containing validation results for every test problem.
+- `changelog/`: Archived pre-fix result snapshots kept for provenance (see `CHANGELOG.md`).
 
 ## Acknowledgments
 
